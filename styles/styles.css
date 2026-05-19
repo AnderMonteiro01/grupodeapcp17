@@ -403,70 +403,101 @@ body:not(.pagina-restaurantes):not(.pagina-carrinho):not(.pagina-login):not(.pag
     border-left: 4px solid coral;
 }
 
-
 /* ============================= */
-/* Painel Restaurante            */
+/* Página Restaurantes           */
 /* ============================= */
 
-.pagina-painel-restaurante main {
+.pagina-restaurantes main {
     display: block;
-    padding: 40px;
-    background-color: #f7f7f7;
+    padding: 70px 85px;
+    background-color: #ffffff;
     min-height: 70vh;
 }
 
-.pagina-painel-restaurante h2 {
-    color: teal;
+.restaurantes-container {
+    width: 100%;
 }
 
-.form-menu {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+.titulo-pagina {
+    margin-bottom: 35px;
 }
 
-.form-menu input,
-.form-menu select {
-    padding: 8px;
-    border: 1px solid #aaa;
-    border-radius: 5px;
+.titulo-pagina h2 {
+    font-size: 36px;
+    color: #222;
+    margin: 0 0 12px 0;
 }
 
-.btn-add {
-    background-color: teal;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    font-weight: bold;
+.titulo-pagina p {
+    font-size: 18px;
+    color: #555;
+    margin: 0;
 }
 
-.btn-add:hover {
-    background-color: #006666;
-    cursor: pointer;
-}
-
-.pagina-painel-restaurante table {
+.tabela-restaurantes {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 30px;
     background-color: white;
 }
 
-.pagina-painel-restaurante th,
-.pagina-painel-restaurante td {
-    border: 1px solid #ccc;
-    padding: 10px;
+.tabela-restaurantes th {
+    text-align: left;
+    padding: 16px 14px;
+    border-bottom: 2px solid #d8d8d8;
+    color: #222;
+    font-size: 16px;
 }
 
-.pagina-painel-restaurante th {
-    background-color: teal;
-    color: white;
+.tabela-restaurantes td {
+    padding: 20px 14px;
+    border-bottom: 1px solid #e1e1e1;
+    vertical-align: middle;
+    font-size: 16px;
 }
 
-.indisponivel {
-    color: red;
+.tabela-restaurantes td strong {
+    color: #222;
+}
+
+.tabela-restaurantes td span {
+    display: inline-block;
+    margin-top: 5px;
+    color: #666;
+    font-size: 14px;
+}
+
+.estado {
+    display: inline-block;
+    padding: 6px 13px;
+    border-radius: 20px;
+    font-size: 13px;
     font-weight: bold;
+}
+
+.estado.aberto {
+    background-color: #d8f5df;
+    color: #167a2f;
+}
+
+.estado.fechado {
+    background-color: #ffdede;
+    color: #a32020;
+}
+
+.botao-menu {
+    display: inline-block;
+    border: 2px solid coral;
+    color: coral;
+    padding: 11px 16px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.botao-menu:hover {
+    background-color: coral;
+    color: white;
 }
 
 

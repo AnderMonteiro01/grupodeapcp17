@@ -4,114 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurantes | FoodToGo</title>
+    <link rel="stylesheet" href="styles/style.css">
 </head>
+
 <body class="pagina-restaurantes">
 
     <header>
         <h1>FoodToGo</h1>
 
         <nav>
-            <a href="index.html">Home</a> |
-            <a href="restaurantes.html">Restaurantes</a> |
-            <a href="login.html">Login / Registo</a>
+            <a href="index.html">Home</a>
+            <a href="restaurantes.html">Restaurantes</a>
+            <a href="carrinho.html">Carrinho</a>
+            <a href="login.html">Conta</a>
         </nav>
     </header>
 
-    <hr>
-
     <main>
-        <h2>Restaurantes disponíveis</h2>
-        <p>Consulte os restaurantes disponíveis e escolha um combo para avançar para a encomenda.</p>
+        <section class="restaurantes-container">
+            <h2>Restaurantes disponíveis</h2>
+            <p>Escolha um restaurante e avance para a encomenda.</p>
 
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>Restaurante</th>
-                    <th>Combo disponível</th>
-                    <th>Estado</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
+            <table class="tabela-restaurantes">
+                <thead>
+                    <tr>
+                        <th>Restaurante</th>
+                        <th>Combo disponível</th>
+                        <th>Estado</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                <tr>
-                    <td>
-                        <strong>Sabor Caseiro</strong><br>
-                        Comida tradicional portuguesa
-                    </td>
+                <tbody>
+                    <tr>
+                        <td class="info-restaurante">
+                            <img src="images/comida1.jpg" alt="Sabor Caseiro">
+                            <div>
+                                <strong>Sabor Caseiro</strong>
+                                <p>Comida tradicional</p>
+                            </div>
+                        </td>
 
-                    <td>
-                        Frango grelhado com arroz + sumo natural<br>
-                        <strong>Preço: 9,50 €</strong>
-                    </td>
+                        <td>
+                            Frango grelhado com arroz + sumo natural<br>
+                            <strong>9,50 €</strong>
+                        </td>
 
-                    <td>Aberto</td>
+                        <td>
+                            <span class="estado aberto">Aberto</span>
+                        </td>
 
-                    <td>
-                        <a href="carrinho.html">Avançar para encomenda</a>
-                    </td>
-                </tr>
+                        <td>
+                            <a href="carrinho.html" class="botao-menu">Ver menu</a>
+                        </td>
+                    </tr>
 
-                <tr>
-                    <td>
-                        <strong>Pizza & Companhia</strong><br>
-                        Pizzas, massas e entradas
-                    </td>
+                    <tr>
+                        <td class="info-restaurante">
+                            <img src="images/comida2.jpg" alt="Pizza & Companhia">
+                            <div>
+                                <strong>Pizza & Companhia</strong>
+                                <p>Pizza</p>
+                            </div>
+                        </td>
 
-                    <td>
-                        Pizza Margherita + refrigerante<br>
-                        <strong>Preço: 9,80 €</strong>
-                    </td>
+                        <td>
+                            Pizza Margherita + refrigerante<br>
+                            <strong>9,80 €</strong>
+                        </td>
 
-                    <td>Aberto</td>
+                        <td>
+                            <span class="estado aberto">Aberto</span>
+                        </td>
 
-                    <td>
-                        <a href="carrinho.html">Avançar para encomenda</a>
-                    </td>
-                </tr>
+                        <td>
+                            <a href="carrinho.html" class="botao-menu">Ver menu</a>
+                        </td>
+                    </tr>
 
-                <tr>
-                    <td>
-                        <strong>Sushi Point</strong><br>
-                        Sushi e comida asiática
-                    </td>
+                    <tr>
+                        <td class="info-restaurante">
+                            <img src="images/comida3.jpg" alt="Sushi Point">
+                            <div>
+                                <strong>Sushi Point</strong>
+                                <p>Sushi</p>
+                            </div>
+                        </td>
 
-                    <td>
-                        Menu sushi 16 peças + chá verde<br>
-                        <strong>Preço: 14,90 €</strong>
-                    </td>
+                        <td>
+                            Menu sushi 16 peças + chá verde<br>
+                            <strong>14,90 €</strong>
+                        </td>
 
-                    <td>Fechado</td>
+                        <td>
+                            <span class="estado fechado">Fechado</span>
+                        </td>
 
-                    <td> Indisponível
-                    </td>
-                </tr>
+                        <td>
+                            <a href="carrinho.html" class="botao-menu">Ver menu</a>
+                        </td>
+                    </tr>
 
-                <tr>
-                    <td>
-                        <strong>Burger House</strong><br>
-                        Hambúrgueres e menus rápidos
-                    </td>
+                    <tr>
+                        <td class="info-restaurante">
+                            <img src="images/comida4.jpg" alt="Burger House">
+                            <div>
+                                <strong>Burger House</strong>
+                                <p>Hambúrguer</p>
+                            </div>
+                        </td>
 
-                    <td>
-                        Cheeseburger + batatas fritas + refrigerante<br>
-                        <strong>Preço: 10,50 €</strong>
-                    </td>
+                        <td>
+                            Cheeseburger + batatas fritas + refrigerante<br>
+                            <strong>10,50 €</strong>
+                        </td>
 
-                    <td>Aberto</td>
+                        <td>
+                            <span class="estado aberto">Aberto</span>
+                        </td>
 
-                    <td>
-                        <a href="carrinho.html">Avançar para encomenda</a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                        <td>
+                            <a href="carrinho.html" class="botao-menu">Ver menu</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
     </main>
 
-    <hr>
-
     <footer>
-        <p>&copy; 2026 FoodToGo</p>
+        <p>© 2026 FoodToGo</p>
     </footer>
 
 </body>

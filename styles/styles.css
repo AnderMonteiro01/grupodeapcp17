@@ -186,55 +186,102 @@ footer {
 }
 
 /* ============================= */
-/* Página Restaurantes           */
+/* Página Restaurantes */
 /* ============================= */
 
 .pagina-restaurantes main {
     display: block;
-    padding: 40px;
-}
-
-.pagina-restaurantes h2 {
-    color: teal;
-    margin-bottom: 10px;
-}
-
-.pagina-restaurantes table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 25px;
-    background-color: white;
-}
-
-.pagina-restaurantes th {
-    background-color: teal;
-    color: white;
-    padding: 12px;
-    text-align: left;
-}
-
-.pagina-restaurantes td {
-    padding: 14px;
-    border: 1px solid #ccc;
-    vertical-align: top;
-}
-
-.pagina-restaurantes tr:nth-child(even) {
+    padding: 40px 60px;
     background-color: #f7f7f7;
 }
 
-.pagina-restaurantes a {
+.restaurantes-container {
+    background-color: white;
+    padding: 25px;
+    border-radius: 10px;
+}
+
+.restaurantes-container h2 {
+    margin-top: 0;
+    color: #222;
+}
+
+.restaurantes-container p {
+    color: #555;
+}
+
+.tabela-restaurantes {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.tabela-restaurantes th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid #ddd;
+    color: #333;
+}
+
+.tabela-restaurantes td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+}
+
+.info-restaurante {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.info-restaurante img {
+    width: 65px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.info-restaurante strong {
+    color: #222;
+}
+
+.info-restaurante p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.estado {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.estado.aberto {
+    background-color: #d8f5df;
+    color: #167a2f;
+}
+
+.estado.fechado {
+    background-color: #ffdede;
+    color: #a32020;
+}
+
+.botao-menu {
     display: inline-block;
-    background-color: coral;
-    color: white;
-    padding: 10px 14px;
+    border: 1px solid teal;
+    color: teal;
+    padding: 8px 14px;
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
 }
 
-.pagina-restaurantes a:hover {
-    background-color: #e76f51;
+.botao-menu:hover {
+    background-color: teal;
+    color: white;
 }
 
 

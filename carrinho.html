@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu / Carrinho / Encomenda | FoodToGo</title>
+</head>
+<body>
+
+    <header>
+        <h1>FoodToGo</h1>
+
+        <nav>
+            <a href="index.html">Home</a> |
+            <a href="restaurantes.html">Restaurantes</a> |
+            <a href="login.html">Login / Registo</a>
+        </nav>
+    </header>
+
+    <hr>
+
+    <main>
+        <h2>Menu / Carrinho / Encomenda</h2>
+
+        <section>
+            <h3>Restaurante selecionado</h3>
+            <p><strong>Sabor Caseiro</strong></p>
+            <p>Combo escolhido: Frango grelhado com arroz + sumo natural</p>
+            <p>Preço: <strong>9,50 €</strong></p>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Carrinho</h3>
+
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Preço unitário</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>Combo Sabor Caseiro</td>
+                        <td>1</td>
+                        <td>9,50 €</td>
+                        <td>9,50 €</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p><strong>Total da encomenda: 9,50 €</strong></p>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Dados da encomenda</h3>
+
+            <form>
+                <label for="nome">Nome do cliente:</label><br>
+                <input type="text" id="nome" name="nome" placeholder="Insira o seu nome">
+                <br><br>
+
+                <label for="morada">Morada de entrega:</label><br>
+                <input type="text" id="morada" name="morada" placeholder="Insira a morada">
+                <br><br>
+
+                <label for="pagamento">Método de pagamento:</label><br>
+                <select id="pagamento" name="pagamento">
+                    <option>Cartão</option>
+                    <option>MB Way</option>
+                    <option>Dinheiro</option>
+                </select>
+                <br><br>
+
+                <label for="observacoes">Observações:</label><br>
+                <textarea id="observacoes" name="observacoes" rows="4" cols="40" placeholder="Ex: sem cebola, entregar à porta..."></textarea>
+                <br><br>
+
+                <button type="submit">Confirmar encomenda</button>
+            </form>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Estado da encomenda</h3>
+
+            <p>Estado atual: <strong>Recebida</strong></p>
+
+            <ol>
+                <li>Recebida</li>
+                <li>Em preparação</li>
+                <li>Pronta</li>
+                <li>Concluída</li>
+            </ol>
+        </section>
+    </main>
+
+    <hr>
+
+    <footer>
+        <p>&copy; 2026 FoodToGo</p>
+    </footer>
+
+</body>
+</html>

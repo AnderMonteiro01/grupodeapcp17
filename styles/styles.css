@@ -398,3 +398,52 @@ footer {
         margin-top: 10px;
     }
 }
+/* ============================= */
+/* Painel Restaurantes                */
+/* ============================= */
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+/* FORM */
+.form-menu {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input, select {
+    padding: 6px;
+}
+
+/* BOTÃO ADD */
+.btn-add {
+    background-color: teal;
+    color: white;
+    border: none;
+    padding: 6px 15px;
+}
+
+/* TABELAS */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+/* HOVER */
+button:hover {
+    cursor: pointer;
+    background-color: lightgray;
+}
+
+/* DESTACAR "Não" */
+td:nth-child(3):contains("Não") {
+    color: red;
+}

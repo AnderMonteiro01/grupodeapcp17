@@ -1,0 +1,57 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    border-bottom: 1px solid #ccc;
+}
+
+header nav a {
+    margin-left: 20px;
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+}
+
+main {
+    display: flex;
+    align-items: center;
+    padding: 50px;
+}
+
+main div {
+    flex: 1;
+    padding: 20px;
+}
+
+main img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.botao-verde {
+    background-color: teal;
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.botao-laranja {
+    border: 2px solid coral;
+    color: coral;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #f1f1f1;
+}

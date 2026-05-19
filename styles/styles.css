@@ -55,3 +55,170 @@ footer {
     padding: 20px;
     background-color: #f1f1f1;
 }
+
+/* ============================= */
+/* Página Restaurantes           */
+/* ============================= */
+
+.pagina-restaurantes main {
+    display: block;
+    padding: 40px;
+}
+
+.pagina-restaurantes h2 {
+    color: teal;
+    margin-bottom: 10px;
+}
+
+.pagina-restaurantes table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+    background-color: white;
+}
+
+.pagina-restaurantes th {
+    background-color: teal;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+.pagina-restaurantes td {
+    padding: 14px;
+    border: 1px solid #ccc;
+    vertical-align: top;
+}
+
+.pagina-restaurantes tr:nth-child(even) {
+    background-color: #f7f7f7;
+}
+
+.pagina-restaurantes a {
+    display: inline-block;
+    background-color: coral;
+    color: white;
+    padding: 10px 14px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.pagina-restaurantes a:hover {
+    background-color: #e76f51;
+}
+
+
+/* ============================= */
+/* Página Carrinho / Encomenda   */
+/* ============================= */
+
+.pagina-carrinho main {
+    display: block;
+    padding: 40px;
+}
+
+.pagina-carrinho h2 {
+    color: teal;
+    margin-bottom: 20px;
+}
+
+.pagina-carrinho table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    margin-bottom: 20px;
+}
+
+.pagina-carrinho th {
+    background-color: teal;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+.pagina-carrinho td {
+    padding: 14px;
+    border: 1px solid #ccc;
+    vertical-align: top;
+}
+
+.pagina-carrinho textarea {
+    width: 95%;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.pagina-carrinho button {
+    background-color: teal;
+    color: white;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.pagina-carrinho button:hover {
+    background-color: #006666;
+}
+
+.pagina-carrinho ol {
+    background-color: #f7f7f7;
+    padding: 15px 30px;
+    border-left: 4px solid coral;
+}
+
+
+/* ============================= */
+/* Responsividade                */
+/* ============================= */
+
+@media screen and (max-width: 768px) {
+    .pagina-restaurantes main,
+    .pagina-carrinho main {
+        padding: 20px;
+    }
+
+    .pagina-restaurantes table,
+    .pagina-restaurantes thead,
+    .pagina-restaurantes tbody,
+    .pagina-restaurantes th,
+    .pagina-restaurantes td,
+    .pagina-restaurantes tr,
+    .pagina-carrinho table,
+    .pagina-carrinho thead,
+    .pagina-carrinho tbody,
+    .pagina-carrinho th,
+    .pagina-carrinho td,
+    .pagina-carrinho tr {
+        display: block;
+        width: 100%;
+    }
+
+    .pagina-restaurantes th,
+    .pagina-carrinho th {
+        display: none;
+    }
+
+    .pagina-restaurantes td,
+    .pagina-carrinho td {
+        border: none;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .pagina-restaurantes tr,
+    .pagina-carrinho tr {
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        background-color: white;
+    }
+
+    .pagina-restaurantes a {
+        width: 100%;
+        text-align: center;
+        margin-top: 10px;
+    }
+}

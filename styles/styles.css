@@ -1,3 +1,132 @@
+/* ============================= */
+/* Página Login / Registo        */
+/* ============================= */
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: teal;
+}
+
+.logo span {
+    color: coral;
+}
+
+.auth-section {
+    min-height: 70vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 20px;
+    background-color: #f7f7f7;
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 430px;
+    background-color: white;
+    padding: 35px;
+    border: 2px solid #ccc;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.auth-box h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: teal;
+}
+
+.auth-box form {
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-box label {
+    margin-top: 12px;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.auth-box input,
+.auth-box select {
+    padding: 10px;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    font-size: 15px;
+}
+
+.auth-box input:focus,
+.auth-box select:focus {
+    outline: none;
+    border-color: teal;
+}
+
+.auth-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.btn-primary,
+.btn-secondary {
+    flex: 1;
+    padding: 12px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: teal;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #006666;
+}
+
+.btn-secondary {
+    background-color: white;
+    color: coral;
+    border: 2px solid coral;
+}
+
+.btn-secondary:hover {
+    background-color: coral;
+    color: white;
+}
+
+.social {
+    margin-top: 10px;
+}
+
+.social span {
+    margin: 0 10px;
+    color: #555;
+}
+
+/* Responsividade do Login */
+@media screen and (max-width: 768px) {
+    .auth-section {
+        padding: 30px 15px;
+    }
+
+    .auth-box {
+        padding: 25px;
+    }
+
+    .auth-buttons {
+        flex-direction: column;
+    }
+}
+
+/* ============================= */
+/* Página Login / Registo        */
+/* ============================= */
 body {
     font-family: Arial, sans-serif;
     margin: 0;

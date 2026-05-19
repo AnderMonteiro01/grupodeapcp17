@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurantes | FoodToGo</title>
+</head>
+<body>
+
+    <header>
+        <h1>FoodToGo</h1>
+
+        <nav>
+            <a href="index.html">Home</a> |
+            <a href="restaurantes.html">Restaurantes</a> |
+            <a href="login.html">Login / Registo</a>
+        </nav>
+    </header>
+
+    <hr>
+
+    <main>
+        <h2>Restaurantes disponíveis</h2>
+        <p>Escolha um restaurante para visualizar o respetivo menu.</p>
+
+        <section>
+            <h3>Pesquisar restaurante</h3>
+
+            <form>
+                <label for="pesquisa">Pesquisar:</label>
+                <input type="text" id="pesquisa" name="pesquisa" placeholder="Nome ou tipo de comida">
+
+                <label for="categoria">Categoria:</label>
+                <select id="categoria" name="categoria">
+                    <option>Todas</option>
+                    <option>Comida tradicional</option>
+                    <option>Pizza</option>
+                    <option>Sushi</option>
+                    <option>Hambúrguer</option>
+                </select>
+
+                <button type="submit">Filtrar</button>
+            </form>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Lista de restaurantes</h3>
+
+            <article>
+                <h4>Sabor Caseiro</h4>
+                <p>Categoria: Comida tradicional portuguesa</p>
+                <p>Estado: Aberto</p>
+                <a href="menu.html">Ver menu</a>
+            </article>
+
+            <article>
+                <h4>Pizza & Companhia</h4>
+                <p>Categoria: Pizza</p>
+                <p>Estado: Aberto</p>
+                <a href="menu.html">Ver menu</a>
+            </article>
+
+            <article>
+                <h4>Sushi Point</h4>
+                <p>Categoria: Sushi</p>
+                <p>Estado: Fechado</p>
+                <a href="menu.html">Ver menu</a>
+            </article>
+
+            <article>
+                <h4>Burger House</h4>
+                <p>Categoria: Hambúrguer</p>
+                <p>Estado: Aberto</p>
+                <a href="menu.html">Ver menu</a>
+            </article>
+        </section>
+    </main>
+
+    <hr>
+
+    <footer>
+        <p>&copy; 2026 FoodToGo</p>
+    </footer>
+
+</body>
+</html>

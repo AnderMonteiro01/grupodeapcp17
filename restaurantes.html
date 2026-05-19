@@ -21,61 +21,91 @@
 
     <main>
         <h2>Restaurantes disponíveis</h2>
-        <p>Escolha um restaurante para visualizar o respetivo menu.</p>
+        <p>Consulte os restaurantes disponíveis e escolha um combo para avançar para a encomenda.</p>
 
-        <section>
-            <h3>Pesquisar restaurante</h3>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Restaurante</th>
+                    <th>Combo disponível</th>
+                    <th>Estado</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
 
-            <form>
-                <label for="pesquisa">Pesquisar:</label>
-                <input type="text" id="pesquisa" name="pesquisa" placeholder="Nome ou tipo de comida">
+            <tbody>
+                <tr>
+                    <td>
+                        <strong>Sabor Caseiro</strong><br>
+                        Comida tradicional portuguesa
+                    </td>
 
-                <label for="categoria">Categoria:</label>
-                <select id="categoria" name="categoria">
-                    <option>Todas</option>
-                    <option>Comida tradicional</option>
-                    <option>Pizza</option>
-                    <option>Sushi</option>
-                    <option>Hambúrguer</option>
-                </select>
+                    <td>
+                        Frango grelhado com arroz + sumo natural<br>
+                        <strong>Preço: 9,50 €</strong>
+                    </td>
 
-                <button type="submit">Filtrar</button>
-            </form>
-        </section>
+                    <td>Aberto</td>
 
-        <hr>
+                    <td>
+                        <a href="carrinho.html">Avançar para encomenda</a>
+                    </td>
+                </tr>
 
-        <section>
-            <h3>Lista de restaurantes</h3>
+                <tr>
+                    <td>
+                        <strong>Pizza & Companhia</strong><br>
+                        Pizzas, massas e entradas
+                    </td>
 
-            <article>
-                <h4>Sabor Caseiro</h4>
-                <p>Categoria: Comida tradicional portuguesa</p>
-                <p>Estado: Aberto</p>
-                <a href="menu.html">Ver menu</a>
-            </article>
+                    <td>
+                        Pizza Margherita + refrigerante<br>
+                        <strong>Preço: 9,80 €</strong>
+                    </td>
 
-            <article>
-                <h4>Pizza & Companhia</h4>
-                <p>Categoria: Pizza</p>
-                <p>Estado: Aberto</p>
-                <a href="menu.html">Ver menu</a>
-            </article>
+                    <td>Aberto</td>
 
-            <article>
-                <h4>Sushi Point</h4>
-                <p>Categoria: Sushi</p>
-                <p>Estado: Fechado</p>
-                <a href="menu.html">Ver menu</a>
-            </article>
+                    <td>
+                        <a href="carrinho.html">Avançar para encomenda</a>
+                    </td>
+                </tr>
 
-            <article>
-                <h4>Burger House</h4>
-                <p>Categoria: Hambúrguer</p>
-                <p>Estado: Aberto</p>
-                <a href="menu.html">Ver menu</a>
-            </article>
-        </section>
+                <tr>
+                    <td>
+                        <strong>Sushi Point</strong><br>
+                        Sushi e comida asiática
+                    </td>
+
+                    <td>
+                        Menu sushi 16 peças + chá verde<br>
+                        <strong>Preço: 14,90 €</strong>
+                    </td>
+
+                    <td>Fechado</td>
+
+                    <td> Indisponível
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <strong>Burger House</strong><br>
+                        Hambúrgueres e menus rápidos
+                    </td>
+
+                    <td>
+                        Cheeseburger + batatas fritas + refrigerante<br>
+                        <strong>Preço: 10,50 €</strong>
+                    </td>
+
+                    <td>Aberto</td>
+
+                    <td>
+                        <a href="carrinho.html">Avançar para encomenda</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </main>
 
     <hr>

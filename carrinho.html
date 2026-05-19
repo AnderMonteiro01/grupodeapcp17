@@ -4,70 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu / Carrinho / Encomenda | FoodToGo</title>
+    <link rel="stylesheet" href="styles/styles.css">
 </head>
+
 <body class="pagina-carrinho">
 
     <header>
         <h1>FoodToGo</h1>
 
         <nav>
-            <a href="index.html">Home</a> |
-            <a href="restaurantes.html">Restaurantes</a> |
-            <a href="login.html">Login / Registo</a>
+            <a href="index.html">Home</a>
+            <a href="restaurantes.html">Restaurantes</a>
+            <a href="carrinho.html">Carrinho</a>
+            <a href="login.html" class="nav-destaque">Login/Registo</a>
         </nav>
     </header>
 
-    <hr>
-
     <main>
-        <h2>Menu / Carrinho / Encomenda</h2>
+        <section class="carrinho-container">
+            <h2>Menu / Carrinho / Encomenda</h2>
 
-        <table border="1" width="100%">
-            <tr>
-                <td width="60%" valign="top">
+            <div class="layout-carrinho">
+
+                <section class="area-menu">
                     <h3>Nome do restaurante</h3>
                     <p><strong>Sabor Caseiro</strong></p>
 
                     <h3>Menu</h3>
 
-                    <table border="1" width="100%">
-                        <tr>
-                            <th>Combo</th>
-                            <th>Preço</th>
-                            <th>Ação</th>
-                        </tr>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Combo</th>
+                                <th>Preço</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
 
-                        <tr>
-                            <td>Frango grelhado com arroz + sumo natural</td>
-                            <td>9,50 €</td>
-                            <td>
-                                <button type="button">Adicionar</button>
-                            </td>
-                        </tr>
+                        <tbody>
+                            <tr>
+                                <td>Frango grelhado com arroz + sumo natural</td>
+                                <td>9,50 €</td>
+                                <td>
+                                    <button type="button">Adicionar</button>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
-                </td>
+                </section>
 
-                <td width="40%" valign="top">
+                <aside class="area-carrinho">
                     <h3>Carrinho</h3>
 
-                    <table border="1" width="100%">
-                        <tr>
-                            <th>Produto</th>
-                            <th>Qtd.</th>
-                            <th>Preço</th>
-                        </tr>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Qtd.</th>
+                                <th>Preço</th>
+                            </tr>
+                        </thead>
 
-                        <tr>
-                            <td>Combo Sabor Caseiro</td>
-                            <td>1</td>
-                            <td>9,50 €</td>
-                        </tr>
+                        <tbody>
+                            <tr>
+                                <td>Combo Sabor Caseiro</td>
+                                <td>1</td>
+                                <td>9,50 €</td>
+                            </tr>
+                        </tbody>
                     </table>
 
-                    <p><strong>Total: 9,50 €</strong></p>
+                    <p class="total"><strong>Total: 9,50 €</strong></p>
 
                     <h4>Observações</h4>
-                    <textarea rows="4" cols="35" placeholder="Ex: sem cebola, entregar à porta..."></textarea>
+                    <textarea rows="4" placeholder="Ex: sem cebola, entregar à porta..."></textarea>
 
                     <br><br>
 
@@ -79,18 +89,17 @@
                     <ol>
                         <li>Recebida</li>
                         <li>Em preparação</li>
-                        <li>Pronta</li>
+                        <li>Pronta para recolha / entrega</li>
                         <li>Concluída</li>
                     </ol>
-                </td>
-            </tr>
-        </table>
+                </aside>
+
+            </div>
+        </section>
     </main>
 
-    <hr>
-
     <footer>
-        <p>&copy; 2026 FoodToGo</p>
+        <p>© 2026 FoodToGo - Todos os direitos reservados.</p>
     </footer>
 
 </body>

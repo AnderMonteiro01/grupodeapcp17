@@ -21,9 +21,7 @@
 
     <div class="card">
         <h2>156</h2>
-        <p>Clientes registados</p>
-    </div>
-
+        <p>Clientes registados
     <div class="card">
         <h2>42</h2>
         <p>Encomendas hoje</p>
@@ -31,16 +29,78 @@
 
 </div>
 
-<!-- GESTÃO RESTAURANTES -->
 <h2>Gestão de Restaurantes</h2>
 
-<table>
+<table id="tabelaRestaurantes">
     <tr>
         <th>Restaurante</th>
-        <th>Proprietário</th>
-        <th>Estado</th>
+        <th>ID</th>
         <th>Ações</th>
     </tr>
+</table>
 
+<script>
+fetch("gerirRestaurantes.php")
+.then(res => res.json())
+.then(dados => {
+    const tabela = document.getElementById("tabelaRestaurantes");
+
+    dados.forEach(r => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${r.nome}</td>
+            <td>${r.idRestaurante}</td>
+            <td>
+                <button onclick="remover(${r.idRestaurante})" class="btn-remover">
+                    Remover
+                </button>
+            </td>
+        `;
+
+        tabela.appendChild(row);
+    });
+});
+
+function remover(id) {
+    window.location.href = "gerirRestaurantes.php?delete=" + id;
+}
+</script>
+<h2>Gestão de Utilizadores</h2>
+
+<table id="tabelaUtilizadores">
     <tr>
-        <td>Sabor Caseiro</td>
+        <th>Username</th>
+        <th>Tipo</th>
+        <th>Ações</th>
+    </tr>
+</table>
+
+<script>
+fetch("gerirUtilizadores.php")
+.then(res => res.json())
+.then(dados => {
+    const tabela = document.getElementById("tabelaUtilizadores");
+
+    dados.forEach(u => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${u.username}</td>
+            <td>${u.tipo}</td>
+            <td>
+                <button onclick="removerUser(${u.idUtilizador})" class="btn-remover">
+                    Remover
+                </button>
+            </td>
+        `;
+
+        tabela.appendChild(row);
+    });
+});
+
+function removerUser(id) {
+    window.location.href = "gerirUtilizadores.php?delete=" + id;
+}
+</script>
+

@@ -4,7 +4,7 @@ require_once 'db.php';
 $db->exec("
 CREATE TABLE IF NOT EXISTS utilizadores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome NOT NULL TEXT,
+    nome TEXT NOT NULL,
     username TEXT NOT NULL UNIQUE,
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,

@@ -4,8 +4,9 @@ require_once 'db.php';
 $db->exec("
 CREATE TABLE IF NOT EXISTS utilizadores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT NOT NULL,
+    nome NOT NULL TEXT,
     username TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     tipo TEXT NOT NULL CHECK(tipo IN ('cliente', 'restaurante', 'admin')),
     ultimo_acesso TEXT
@@ -15,10 +16,12 @@ CREATE TABLE IF NOT EXISTS utilizadores (
 $db->exec("
 CREATE TABLE IF NOT EXISTS restaurantes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    utilizador_id INTEGER,
     nome TEXT NOT NULL,
     categoria TEXT,
     morada TEXT,
-    ativo INTEGER DEFAULT 1
+    ativo INTEGER DEFAULT 1,
+    FOREIGN KEY (utilizador_id) REFERENCES utilizadores(id)
 );
 ");
 

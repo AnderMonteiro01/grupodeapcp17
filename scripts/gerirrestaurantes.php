@@ -18,6 +18,4 @@ $dados = [];
 while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
     $dados[] = $row;
 }
-header('Content-Type: application/json');
-echo json_encode($dados);
-?>
+<?

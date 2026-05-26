@@ -6,101 +6,76 @@
     <link rel="stylesheet" href="styles/styles.css">
 </head>
 
-<body>
+<body class="pagina-painel-restaurante">
 
-<!-- TOP -->
-<h1>Painel Administrador | Sair</h1>
+<!-- HEADER -->
+<header>
+    <div class="logo">Food<span>ToGo</span></div>
+    <nav>
+        <a href="index.html">Início</a>
+        <a href="#" class="nav-destaque">Sair</a>
+    </nav>
+</header>
 
-<!-- RESUMO -->
-<div class="stats">
+<!-- MAIN -->
+<main>
 
-    <div class="card">
-        <h2>24</h2>
-        <p>Restaurantes registados</p>
+<div class="painel-restaurante-container">
+
+    <!-- TÍTULO -->
+    <h2>Painel Administrador</h2>
+    <p>Gestão da plataforma</p>
+
+    <!-- CARDS -->
+    <div class="layout-carrinho" style="grid-template-columns: repeat(3,1fr); gap:20px; margin-bottom:40px;">
+
+        <div class="area-menu">
+            <h3>Restaurantes</h3>
+            <p>Total de restaurantes registados</p>
+        </div>
+
+        <div class="area-menu">
+            <h3>Utilizadores</h3>
+            <p>Total de clientes e restaurantes</p>
+        </div>
+
+        <div class="area-menu">
+            <h3>Encomendas</h3>
+            <p>Total de encomendas realizadas</p>
+        </div>
+
     </div>
 
-    <div class="card">
-        <h2>156</h2>
-        <p>Clientes registados
-    <div class="card">
-        <h2>42</h2>
-        <p>Encomendas hoje</p>
+    <!-- RESTAURANTES -->
+    <div class="gestao-menu">
+        <h3>Gestão de Restaurantes</h3>
+
+        <iframe 
+            src="scripts/lista_restaurantes.php"
+            style="width:100%; height:300px; border:none;">
+        </iframe>
+
+    </div>
+
+    <!-- UTILIZADORES -->
+    <div class="gestao-encomendas">
+        <h3>Gestão de Utilizadores</h3>
+
+        <iframe 
+            src="scripts/lista_utilizadores.php"
+            style="width:100%; height:300px; border:none;">
+        </iframe>
+
     </div>
 
 </div>
 
-<h2>Gestão de Restaurantes</h2>
+</main>
 
-<table id="tabelaRestaurantes">
-    <tr>
-        <th>Restaurante</th>
-        <th>ID</th>
-        <th>Ações</th>
-    </tr>
-</table>
+<!-- FOOTER -->
+<footer>
+    <p>© 2026 OFFFood - Plataforma de Encomendas</p>
+</footer>
 
-<script>
-fetch("gerirRestaurantes.php")
-.then(res => res.json())
-.then(dados => {
-    const tabela = document.getElementById("tabelaRestaurantes");
-
-    dados.forEach(r => {
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-            <td>${r.nome}</td>
-            <td>${r.idRestaurante}</td>
-            <td>
-                <button onclick="remover(${r.idRestaurante})" class="btn-remover">
-                    Remover
-                </button>
-            </td>
-        `;
-
-        tabela.appendChild(row);
-    });
-});
-
-function remover(id) {
-    window.location.href = "gerirRestaurantes.php?delete=" + id;
-}
-</script>
-<h2>Gestão de Utilizadores</h2>
-
-<table id="tabelaUtilizadores">
-    <tr>
-        <th>Username</th>
-        <th>Tipo</th>
-        <th>Ações</th>
-    </tr>
-</table>
-
-<script>
-fetch("gerirUtilizadores.php")
-.then(res => res.json())
-.then(dados => {
-    const tabela = document.getElementById("tabelaUtilizadores");
-
-    dados.forEach(u => {
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-            <td>${u.username}</td>
-            <td>${u.tipo}</td>
-            <td>
-                <button onclick="removerUser(${u.idUtilizador})" class="btn-remover">
-                    Remover
-                </button>
-            </td>
-        `;
-
-        tabela.appendChild(row);
-    });
-});
-
-function removerUser(id) {
-    window.location.href = "gerirUtilizadores.php?delete=" + id;
-}
-</script>
-
+</body>
+</html>

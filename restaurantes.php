@@ -1,0 +1,141 @@
+<?php
+session_start();
+?>
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurantes | FoodToGo</title>
+    <link rel="stylesheet" href="styles/styles.css">
+</head>
+
+<body class="pagina-restaurantes">
+
+    <header>
+        <h1>FoodToGo</h1>
+
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="restaurantes.php">Restaurantes</a>
+            <a href="carrinho.html">Carrinho</a>
+
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <span class="nav-utilizador">
+                    Olá, <?php echo htmlspecialchars($_SESSION['nome']); ?>
+                </span>
+                <a href="scripts/logout.php" class="nav-destaque">Sair</a>
+            <?php else: ?>
+                <a href="login.html" class="nav-destaque">Login/Registo</a>
+            <?php endif; ?>
+        </nav>
+    </header>
+
+    <main>
+        <section class="restaurantes-container">
+            <div class="titulo-pagina">
+                <h2>Restaurantes disponíveis</h2>
+                <p>Escolha um restaurante, consulte o combo disponível e avance para a encomenda.</p>
+            </div>
+
+            <table class="tabela-restaurantes">
+                <thead>
+                    <tr>
+                        <th>Restaurante</th>
+                        <th>Combo disponível</th>
+                        <th>Estado</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>Sabor Caseiro</strong><br>
+                            <span>Comida tradicional portuguesa</span>
+                        </td>
+
+                        <td>
+                            Frango grelhado com arroz + sumo natural<br>
+                            <strong>9,50 €</strong>
+                        </td>
+
+                        <td>
+                            <span class="estado aberto">Aberto</span>
+                        </td>
+
+                        <td>
+                            <a href="carrinho.html" class="botao-menu">Avançar para encomenda</a>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <strong>Pizza & Companhia</strong><br>
+                            <span>Pizzas, massas e entradas</span>
+                        </td>
+
+                        <td>
+                            Pizza Margherita + refrigerante<br>
+                            <strong>9,80 €</strong>
+                        </td>
+
+                        <td>
+                            <span class="estado aberto">Aberto</span>
+                        </td>
+
+                        <td>
+                            <a href="carrinho.html" class="botao-menu">Avançar para encomenda</a>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <strong>Sushi Point</strong><br>
+                            <span>Sushi e comida asiática</span>
+                        </td>
+
+                        <td>
+                            Menu sushi 16 peças + chá verde<br>
+                            <strong>14,90 €</strong>
+                        </td>
+
+                        <td>
+                            <span class="estado fechado">Fechado</span>
+                        </td>
+
+                        <td>
+                            Indisponível
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <strong>Burger House</strong><br>
+                            <span>Hambúrgueres e menus rápidos</span>
+                        </td>
+
+                        <td>
+                            Cheeseburger + batatas fritas + refrigerante<br>
+                            <strong>10,50 €</strong>
+                        </td>
+
+                        <td>
+                            <span class="estado aberto">Aberto</span>
+                        </td>
+
+                        <td>
+                            <a href="carrinho.html" class="botao-menu">Avançar para encomenda</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 FoodToGo - Todos os direitos reservados.</p>
+    </footer>
+
+</body>
+</html>

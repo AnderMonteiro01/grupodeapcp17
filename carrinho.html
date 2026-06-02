@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu / Carrinho / Encomenda | FoodToGo</title>
     <link rel="stylesheet" href="styles/styles.css">
+    <script src="scripts/carrinho.js" defer></script>
 </head>
 
 <body class="pagina-carrinho">
@@ -46,14 +47,14 @@
                                 <td>Frango grelhado com arroz + sumo natural</td>
                                 <td>9,50 €</td>
                                 <td>
-                                    <button type="button">Adicionar</button>
+                                    <button type="button" id="btn-adicionar">Adicionar</button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </section>
 
-                <aside class="area-carrinho">
+                <aside class="area-carrinho" id="caixa-carrinho">
                     <h3>Carrinho</h3>
 
                     <table>
@@ -65,23 +66,18 @@
                             </tr>
                         </thead>
 
-                        <tbody>
-                            <tr>
-                                <td>Combo Sabor Caseiro</td>
-                                <td>1</td>
-                                <td>9,50 €</td>
-                            </tr>
+                        <tbody id="corpo-carrinho">
                         </tbody>
                     </table>
 
-                    <p class="total"><strong>Total: 9,50 €</strong></p>
+                    <p class="total" id="texto-total"><strong>Total: 0,00 €</strong></p>
 
                     <h4>Observações</h4>
                     <textarea rows="4" placeholder="Ex: sem cebola, entregar à porta..."></textarea>
 
                     <br><br>
 
-                    <button type="submit">Confirmar encomenda</button>
+                    <button type="button" id="btn-confirmar">Confirmar encomenda</button>
 
                     <h4>Estado da encomenda</h4>
                     <p><strong>Recebida</strong></p>
@@ -96,10 +92,32 @@
 
             </div>
         </section>
+
+        <section class="historico-container" style="margin: 40px auto; max-width: 1000px; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <h3>Últimas Encomendas Globais</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                        <th style="padding: 10px;">Utilizador</th>
+                        <th style="padding: 10px;">Pedido</th>
+                        <th style="padding: 10px;">Total</th>
+                        <th style="padding: 10px;">Data/Hora</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-historico">
+                </tbody>
+            </table>
+        </section>
     </main>
 
     <footer>
         <p>© 2026 FoodToGo - Todos os direitos reservados.</p>
+        
+        <button id="btn-grupo" style="margin-top: 10px;">Sobre o Grupo</button>
+        <div id="info-grupo" style="display: none; background-color: #f1f1f1; padding: 10px; margin-top: 10px; border-radius: 5px; color: #333;">
+            <p><strong>Projeto:</strong> FoodToGo - Desenvolvimento de Aplicações Computacionais</p>
+            <p><strong>Elementos do Grupo:</strong> Rodrigo, André e Erick</p>
+        </div>
     </footer>
 
 </body>

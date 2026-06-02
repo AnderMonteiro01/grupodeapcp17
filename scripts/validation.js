@@ -48,11 +48,14 @@ document.querySelector('form[action="scripts/novoregisto.php"]').addEventListene
         erros.push("Password não pode conter acentos");
         marcarErro(password);
     }
+if (erros.length > 0) {
+    e.preventDefault();
+    mostrarNotificacao(erros.join("\n"), "erro");
+} else {
+    e.preventDefault(); // NÃO envia para PHP
+    mostrarNotificacao("Conta criada com sucesso!", "sucesso");
+}
 
-    if (erros.length > 0) {
-        e.preventDefault();
-        alert(erros.join("\n"));
-    }
 });
 function marcarErro(input) {
     input.style.border = "2px solid red";
@@ -65,4 +68,28 @@ function resetStyles(inputs) {
         input.style.backgroundColor = "";
     });
 }
-``
+function mostrarNotificacao(msg, tipo) {
+    let notif = document.createElement("div");
+    notif.innerText = msg;
+
+    notif.style.position = "fixed";
+    notif.style.top = "20px";
+    notif.style.right = "20px";
+    notif.style.padding = "15px 20px";
+    notif.style.borderRadius = "8px";
+    notif.style.color = "white";
+    notif.style.fontWeight = "bold";
+    notif.style.zIndex = "9999";
+
+    if (tipo === "erro") {
+        notif.style.backgroundColor = "#e74c3c"; // vermelho
+    } else {
+        notif.style.backgroundColor = "#2ecc71"; // verde
+    }
+
+    document.body.appendChild(notif);
+
+    setTimeout(() => {
+        notif.remove();
+    }, 3000);
+}

@@ -2,37 +2,31 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FoodToGo</title>
     <link rel="stylesheet" href="styles/styles.css">
 </head>
 <body>
-
-    <header>
-        <h1>FoodToGo</h1>
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="restaurantes.php">Restaurantes</a>
-            <a href="login.html" class="botao-laranja">Login/Registo</a>
-        </nav>
-    </header>
-
-    <main>
-        <div>
-            <img src="images/imagem.jpg" alt="Comida FoodToGo">
-        </div>
-        
-        <div>
-            <h2>Peça a sua comida favorita online, de forma simples e rápida.</h2>
-            <p>Descubra os melhores restaurantes perto de si e receba no conforto da sua casa.</p>
-            <br>
-            <a href="restaurantes.html" class="botao-verde">Ver Restaurantes &rarr;</a>
-            <a href="login.html" class="botao-laranja">Entrar / Registar</a>
-        </div>
-    </main>
-
-    <footer>
-        <p>© 2026 FoodToGo - Todos os direitos reservados.</p>
-    </footer>
-
+<header>
+    <h1>FoodToGo</h1>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="restaurantes.php">Restaurantes</a>
+        <a href="carrinho.php">Carrinho (<span data-cart-count>0</span>)</a>
+        <a href="login.html" class="nav-destaque">Login/Registo</a>
+    </nav>
+</header>
+<main class="home-main">
+    <div><img src="images/imagem.jpg" alt="Comida FoodToGo" onerror="this.style.display='none'"></div>
+    <div>
+        <h2>Peça a sua comida favorita online, de forma simples e rápida.</h2>
+        <p>Descubra restaurantes, consulte menus e faça encomendas com uma conta registada.</p>
+        <br>
+        <a href="restaurantes.php" class="botao-verde">Ver Restaurantes &rarr;</a>
+        <a href="login.html" class="botao-laranja">Entrar / Registar</a>
+    </div>
+</main>
+<footer><p>© 2026 FoodToGo - Todos os direitos reservados.</p></footer>
+<script src="scripts/app.js"></script>
 </body>
 </html>

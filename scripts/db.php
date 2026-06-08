@@ -20,7 +20,7 @@ function require_login($tipo = null) {
         exit;
     }
     if ($tipo !== null && ($_SESSION['tipo'] ?? '') !== $tipo) {
-        header('Location: index.html');
+        header('Location: index.php');
         exit;
     }
 }

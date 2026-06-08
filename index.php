@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="pt-PT">
 <head>
@@ -9,11 +12,28 @@
 <body>
 <header>
     <h1>FoodToGo</h1>
+
     <nav>
-        <a href="index.html">Home</a>
+        <a href="index.php">Home</a>
         <a href="restaurantes.php">Restaurantes</a>
-        <a href="carrinho.php">Carrinho (<span data-cart-count>0</span>)</a>
-        <a href="login.html" class="nav-destaque">Login/Registo</a>
+
+        <?php if (isset($_SESSION['user_id'])): ?>
+
+            <?php if ($_SESSION['tipo'] === 'cliente'): ?>
+                <a href="carrinho.php">Carrinho</a>
+            <?php endif; ?>
+
+            <span class="nav-utilizador">
+                Olá, <?php echo htmlspecialchars($_SESSION['nome']); ?>
+            </span>
+
+            <a href="scripts/logout.php" class="nav-destaque">Sair</a>
+
+        <?php else: ?>
+
+            <a href="login.html" class="nav-destaque">Login/Registo</a>
+
+        <?php endif; ?>
     </nav>
 </header>
 <main class="home-main">
@@ -23,7 +43,10 @@
         <p>Descubra restaurantes, consulte menus e faça encomendas com uma conta registada.</p>
         <br>
         <a href="restaurantes.php" class="botao-verde">Ver Restaurantes &rarr;</a>
-        <a href="login.html" class="botao-laranja">Entrar / Registar</a>
+
+        <?php if (!isset($_SESSION['user_id'])): ?>
+            <a href="login.html" class="botao-laranja">Entrar / Registar</a>
+        <?php endif; ?>
     </div>
 </main>
 <footer><p>© 2026 FoodToGo - Todos os direitos reservados.</p></footer>

@@ -2,8 +2,13 @@
 session_start();
 require_once 'db.php';
 
+header('Content-Type: application/json; charset=utf-8');
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../login.html');
+    echo json_encode([
+        'sucesso' => false,
+        'mensagem' => 'Método inválido.'
+    ]);
     exit;
 }
 
@@ -11,15 +16,24 @@ $login = trim($_POST['login'] ?? '');
 $password = trim($_POST['password'] ?? '');
 
 if ($login === '' || $password === '') {
-    die('Username/email e palavra-passe são obrigatórios.');
+    echo json_encode([
+        'sucesso' => false,
+        'mensagem' => 'Preencha o username/email e a palavra-passe.'
+    ]);
+    exit;
 }
 
 $stmt = $db->prepare("SELECT id, nome, username, email, password, tipo FROM utilizadores WHERE username = :login OR email = :login");
 $stmt->bindValue(':login', $login, SQLITE3_TEXT);
-$user = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+$result = $stmt->execute();
+$user = $result ? $result->fetchArray(SQLITE3_ASSOC) : false;
 
 if (!$user || !password_verify($password, $user['password'])) {
-    die('Credenciais inválidas. <a href="../login.html">Voltar</a>');
+    echo json_encode([
+        'sucesso' => false,
+        'mensagem' => 'Credenciais inválidas.'
+    ]);
+    exit;
 }
 
 $_SESSION['user_id'] = (int)$user['id'];
@@ -29,6 +43,7 @@ $_SESSION['email'] = $user['email'];
 $_SESSION['tipo'] = $user['tipo'];
 
 $dataHora = date('Y-m-d H:i:s');
+
 $stmt = $db->prepare("UPDATE utilizadores SET ultimo_acesso = :ultimo_acesso WHERE id = :id");
 $stmt->bindValue(':ultimo_acesso', $dataHora, SQLITE3_TEXT);
 $stmt->bindValue(':id', (int)$user['id'], SQLITE3_INTEGER);
@@ -39,12 +54,20 @@ $stmt->bindValue(':uid', (int)$user['id'], SQLITE3_INTEGER);
 $stmt->bindValue(':data', $dataHora, SQLITE3_TEXT);
 $stmt->execute();
 
+$redirect = 'restaurantes.php';
+
 if ($user['tipo'] === 'admin') {
-    header('Location: ../paineladmin.php');
+    $redirect = 'paineladmin.php';
 } elseif ($user['tipo'] === 'restaurante') {
-    header('Location: ../painelrestaurante.php');
-} else {
-    header('Location: ../restaurantes.php');
+    $redirect = 'painelrestaurante.php';
+} elseif ($user['tipo'] === 'cliente') {
+    $redirect = 'restaurantes.php';
 }
+
+echo json_encode([
+    'sucesso' => true,
+    'mensagem' => 'Login efetuado com sucesso.',
+    'redirect' => $redirect
+]);
 exit;
 ?>

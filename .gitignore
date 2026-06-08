@@ -1,0 +1,15 @@
+# Base de dados local SQLite
+data/foodtogo.db
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# Ficheiros temporários do SQLite
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.vscode/

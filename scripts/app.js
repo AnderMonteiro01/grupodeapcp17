@@ -89,7 +89,57 @@ document.addEventListener('input', e => {
     }
 });
 
+
+
+function processLoginMessages(){
+    const params = new URLSearchParams(window.location.search);
+    const registo = params.get('registo');
+    if (!registo) return;
+
+    const mensagens = {
+        sucesso: 'Conta criada com sucesso. Já pode iniciar sessão.',
+        campos: 'Preencha todos os campos do registo.',
+        email_invalido: 'O email inserido não é válido.',
+        duplicado: 'O username ou email já existe.',
+        erro: 'Ocorreu um erro ao criar a conta.'
+    };
+
+    if (mensagens[registo]) {
+        alert(mensagens[registo]);
+        window.history.replaceState({}, document.title, 'login.html');
+    }
+}
+
+function setupLoginAjax(){
+    const formLogin = document.getElementById('form-login');
+    if (!formLogin) return;
+
+    formLogin.addEventListener('submit', event => {
+        event.preventDefault();
+        const dados = new FormData(formLogin);
+
+        fetch('scripts/login.php', {
+            method: 'POST',
+            body: dados
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                window.location.href = data.redirect;
+            } else {
+                alert(data.mensagem || 'Não foi possível iniciar sessão.');
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            alert('Ocorreu um erro ao tentar iniciar sessão.');
+        });
+    });
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
+    processLoginMessages(); setupLoginAjax();
     updateCartCounter(); renderCart();
     if(document.body.dataset.clearCart === '1') { clearCart(); renderCart(); updateCartCounter(); }
 });

@@ -2,10 +2,14 @@
 require_once 'db.php';
 
 /*
-    scripts/criar_bd.php
-    Cria/atualiza a base de dados SQLite da aplicação FoodToGo.
-    Este ficheiro pode ser executado várias vezes sem apagar dados existentes.
+    FoodToGo - criar_bd.php
+    Cria/atualiza a base de dados SQLite da aplicação.
+
+    Pode ser executado várias vezes.
+    Se a base já existir, tenta acrescentar colunas novas sem apagar dados.
 */
+
+$db->exec("PRAGMA foreign_keys = ON");
 
 /* =========================
    TABELA UTILIZADORES
@@ -41,7 +45,7 @@ $db->exec("
 ");
 
 /* =========================
-   TABELA PRODUTOS / MENU
+   TABELA PRODUTOS
 ========================= */
 
 $db->exec("
@@ -64,20 +68,21 @@ $db->exec("
     CREATE TABLE IF NOT EXISTS encomendas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         utilizador_id INTEGER NOT NULL,
+        restaurante_id INTEGER NOT NULL,
         data TEXT NOT NULL,
         estado TEXT NOT NULL DEFAULT 'recebida',
         total REAL NOT NULL DEFAULT 0,
         morada_entrega TEXT,
         contacto_cliente TEXT,
         observacoes TEXT,
-        FOREIGN KEY (utilizador_id) REFERENCES utilizadores(id)
+        FOREIGN KEY (utilizador_id) REFERENCES utilizadores(id),
+        FOREIGN KEY (restaurante_id) REFERENCES restaurantes(id)
     )
 ");
 
 /*
-    Se a tabela encomendas já existia antes sem os novos campos,
-    CREATE TABLE IF NOT EXISTS não altera a estrutura.
-    Por isso fazemos ALTER TABLE apenas se as colunas ainda não existirem.
+    Se a tabela encomendas já existia antes, o CREATE TABLE IF NOT EXISTS
+    não altera a estrutura. Por isso verificamos e adicionamos colunas em falta.
 */
 
 $colunasEncomendas = [];
@@ -85,6 +90,10 @@ $result = $db->query("PRAGMA table_info(encomendas)");
 
 while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
     $colunasEncomendas[] = $row['name'];
+}
+
+if (!in_array('restaurante_id', $colunasEncomendas, true)) {
+    $db->exec("ALTER TABLE encomendas ADD COLUMN restaurante_id INTEGER");
 }
 
 if (!in_array('morada_entrega', $colunasEncomendas, true)) {
@@ -129,15 +138,15 @@ $db->exec("
 ");
 
 /* =========================
-   UTILIZADORES DE TESTE
+   FUNÇÕES AUXILIARES
 ========================= */
 
 function criarOuAtualizarUtilizador($db, $nome, $username, $email, $password, $tipo) {
     $hash = password_hash($password, PASSWORD_DEFAULT);
 
     $stmt = $db->prepare("
-        SELECT id 
-        FROM utilizadores 
+        SELECT id
+        FROM utilizadores
         WHERE username = :username OR email = :email
         LIMIT 1
     ");
@@ -199,6 +208,66 @@ function criarOuAtualizarUtilizador($db, $nome, $username, $email, $password, $t
     return (int)$db->lastInsertRowID();
 }
 
+function criarProdutoSeNaoExiste($db, $restauranteId, $nome, $descricao, $preco) {
+    $stmt = $db->prepare("
+        SELECT id
+        FROM produtos
+        WHERE restaurante_id = :restaurante_id
+          AND nome = :nome
+        LIMIT 1
+    ");
+
+    $stmt->bindValue(':restaurante_id', $restauranteId, SQLITE3_INTEGER);
+    $stmt->bindValue(':nome', $nome, SQLITE3_TEXT);
+
+    $result = $stmt->execute();
+    $produto = $result->fetchArray(SQLITE3_ASSOC);
+
+    if ($produto) {
+        $stmt = $db->prepare("
+            UPDATE produtos
+            SET descricao = :descricao,
+                preco = :preco,
+                disponivel = 1
+            WHERE id = :id
+        ");
+
+        $stmt->bindValue(':descricao', $descricao, SQLITE3_TEXT);
+        $stmt->bindValue(':preco', (float)$preco, SQLITE3_FLOAT);
+        $stmt->bindValue(':id', (int)$produto['id'], SQLITE3_INTEGER);
+        $stmt->execute();
+
+        return;
+    }
+
+    $stmt = $db->prepare("
+        INSERT INTO produtos (
+            restaurante_id,
+            nome,
+            descricao,
+            preco,
+            disponivel
+        )
+        VALUES (
+            :restaurante_id,
+            :nome,
+            :descricao,
+            :preco,
+            1
+        )
+    ");
+
+    $stmt->bindValue(':restaurante_id', $restauranteId, SQLITE3_INTEGER);
+    $stmt->bindValue(':nome', $nome, SQLITE3_TEXT);
+    $stmt->bindValue(':descricao', $descricao, SQLITE3_TEXT);
+    $stmt->bindValue(':preco', (float)$preco, SQLITE3_FLOAT);
+    $stmt->execute();
+}
+
+/* =========================
+   UTILIZADORES DE TESTE
+========================= */
+
 $adminId = criarOuAtualizarUtilizador(
     $db,
     'Administrador',
@@ -231,8 +300,8 @@ $clienteId = criarOuAtualizarUtilizador(
 ========================= */
 
 $stmt = $db->prepare("
-    SELECT id 
-    FROM restaurantes 
+    SELECT id
+    FROM restaurantes
     WHERE utilizador_id = :utilizador_id
     LIMIT 1
 ");
@@ -289,62 +358,6 @@ if ($restauranteTeste) {
    PRODUTOS DE TESTE
 ========================= */
 
-function criarProdutoSeNaoExiste($db, $restauranteId, $nome, $descricao, $preco) {
-    $stmt = $db->prepare("
-        SELECT id 
-        FROM produtos
-        WHERE restaurante_id = :restaurante_id
-          AND nome = :nome
-        LIMIT 1
-    ");
-
-    $stmt->bindValue(':restaurante_id', $restauranteId, SQLITE3_INTEGER);
-    $stmt->bindValue(':nome', $nome, SQLITE3_TEXT);
-
-    $result = $stmt->execute();
-    $produto = $result->fetchArray(SQLITE3_ASSOC);
-
-    if ($produto) {
-        $stmt = $db->prepare("
-            UPDATE produtos
-            SET descricao = :descricao,
-                preco = :preco,
-                disponivel = 1
-            WHERE id = :id
-        ");
-
-        $stmt->bindValue(':descricao', $descricao, SQLITE3_TEXT);
-        $stmt->bindValue(':preco', $preco, SQLITE3_FLOAT);
-        $stmt->bindValue(':id', (int)$produto['id'], SQLITE3_INTEGER);
-        $stmt->execute();
-
-        return;
-    }
-
-    $stmt = $db->prepare("
-        INSERT INTO produtos (
-            restaurante_id,
-            nome,
-            descricao,
-            preco,
-            disponivel
-        )
-        VALUES (
-            :restaurante_id,
-            :nome,
-            :descricao,
-            :preco,
-            1
-        )
-    ");
-
-    $stmt->bindValue(':restaurante_id', $restauranteId, SQLITE3_INTEGER);
-    $stmt->bindValue(':nome', $nome, SQLITE3_TEXT);
-    $stmt->bindValue(':descricao', $descricao, SQLITE3_TEXT);
-    $stmt->bindValue(':preco', $preco, SQLITE3_FLOAT);
-    $stmt->execute();
-}
-
 criarProdutoSeNaoExiste(
     $db,
     $restauranteId,
@@ -369,6 +382,14 @@ criarProdutoSeNaoExiste(
     8.75
 );
 
+criarProdutoSeNaoExiste(
+    $db,
+    $restauranteId,
+    'Hambúrguer de Vaca + Sumo Compal 300ml + Sorvete Baunilha',
+    'Combo completo.',
+    19.50
+);
+
 /* =========================
    OUTPUT
 ========================= */
@@ -381,6 +402,7 @@ criarProdutoSeNaoExiste(
     <title>Base de Dados | FoodToGo</title>
     <link rel="stylesheet" href="../styles/styles.css">
 </head>
+
 <body class="pagina-painel">
     <main>
         <section class="painel-container">

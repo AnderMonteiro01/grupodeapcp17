@@ -1,100 +1,55 @@
-const CART_KEY = 'foodtogo_cart';
+/*
+    FoodToGo - app.js
 
-function getCart(){
-    try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch(e){ return []; }
-}
-function saveCart(cart){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
-function clearCart(){ localStorage.removeItem(CART_KEY); }
-function addProduct(product){
-    const cart = getCart();
-    const existing = cart.find(item => item.produto_id === product.produto_id);
-    if(existing){ existing.quantidade += 1; }
-    else { cart.push({...product, quantidade: 1}); }
-    saveCart(cart);
-    alert('Produto adicionado ao carrinho.');
-    updateCartCounter();
-}
-function updateCartCounter(){
-    const el = document.querySelector('[data-cart-count]');
-    if(!el) return;
-    const total = getCart().reduce((sum,item)=>sum + Number(item.quantidade || 0), 0);
-    el.textContent = total;
-}
-function renderCart(){
-    const tbody = document.querySelector('#cart-body');
-    const totalEl = document.querySelector('#cart-total');
-    const input = document.querySelector('#cart-json');
-    if(!tbody || !totalEl) return;
-    const cart = getCart();
-    tbody.innerHTML = '';
-    let total = 0;
-    if(cart.length === 0){
-        tbody.innerHTML = '<tr><td colspan="5">Carrinho vazio.</td></tr>';
-    } else {
-        cart.forEach((item, index) => {
-            const subtotal = Number(item.preco) * Number(item.quantidade);
-            total += subtotal;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${escapeHtml(item.produto_nome)}</strong><br><span>${escapeHtml(item.restaurante_nome)}</span></td>
-                <td>${Number(item.preco).toFixed(2)} €</td>
-                <td><input type="number" min="1" value="${item.quantidade}" data-cart-qty="${index}" style="width:80px"></td>
-                <td>${subtotal.toFixed(2)} €</td>
-                <td><button type="button" class="btn-secondary" data-cart-remove="${index}">Remover</button></td>`;
-            tbody.appendChild(tr);
-        });
+    Este ficheiro contém a lógica JavaScript geral da aplicação:
+    - mensagens visuais ao utilizador;
+    - tratamento do login com fetch/AJAX;
+    - leitura de respostas JSON vindas do PHP;
+    - mensagens após registo;
+    - controlo das abas do painel de administração.
+
+    A lógica específica do carrinho está no carrinho.php,
+    porque depende diretamente de dados vindos do PHP e da base de dados.
+*/
+
+/* =========================
+   MENSAGENS VISUAIS
+========================= */
+
+function mostrarMensagem(mensagem, tipo = 'erro') {
+    let caixa = document.getElementById('mensagem-js');
+
+    if (!caixa) {
+        caixa = document.createElement('div');
+        caixa.id = 'mensagem-js';
+        caixa.className = 'mensagem-js';
+        document.body.prepend(caixa);
     }
-    totalEl.textContent = total.toFixed(2).replace('.', ',') + ' €';
-    if(input) input.value = JSON.stringify(cart);
-}
-function escapeHtml(str){
-    return String(str).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+
+    caixa.textContent = mensagem;
+    caixa.className = 'mensagem-js ' + tipo;
+    caixa.style.display = 'block';
+
+    clearTimeout(caixa.dataset.timeoutId);
+
+    const timeoutId = setTimeout(() => {
+        caixa.style.display = 'none';
+    }, 4000);
+
+    caixa.dataset.timeoutId = timeoutId;
 }
 
-document.addEventListener('click', e => {
-    const addBtn = e.target.closest('[data-add-product]');
-    if(addBtn){
-        addProduct({
-            produto_id: Number(addBtn.dataset.produtoId),
-            restaurante_id: Number(addBtn.dataset.restauranteId),
-            restaurante_nome: addBtn.dataset.restauranteNome,
-            produto_nome: addBtn.dataset.produtoNome,
-            preco: Number(addBtn.dataset.preco)
-        });
-    }
-    const removeBtn = e.target.closest('[data-cart-remove]');
-    if(removeBtn){
-        const cart = getCart();
-        cart.splice(Number(removeBtn.dataset.cartRemove), 1);
-        saveCart(cart);
-        renderCart(); updateCartCounter();
-    }
-    const tabBtn = e.target.closest('[data-tab]');
-    if(tabBtn){
-        document.querySelectorAll('[data-tab]').forEach(b=>b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-        tabBtn.classList.add('active');
-        const target = document.getElementById(tabBtn.dataset.tab);
-        if(target) target.classList.add('active');
-    }
-});
+/* =========================
+   MENSAGENS DO REGISTO
+========================= */
 
-document.addEventListener('input', e => {
-    const qty = e.target.closest('[data-cart-qty]');
-    if(qty){
-        const cart = getCart();
-        const idx = Number(qty.dataset.cartQty);
-        cart[idx].quantidade = Math.max(1, Number(qty.value || 1));
-        saveCart(cart); renderCart(); updateCartCounter();
-    }
-});
-
-
-
-function processLoginMessages(){
+function processLoginMessages() {
     const params = new URLSearchParams(window.location.search);
     const registo = params.get('registo');
-    if (!registo) return;
+
+    if (!registo) {
+        return;
+    }
 
     const mensagens = {
         sucesso: 'Conta criada com sucesso. Já pode iniciar sessão.',
@@ -105,41 +60,94 @@ function processLoginMessages(){
     };
 
     if (mensagens[registo]) {
-        alert(mensagens[registo]);
+        const tipo = registo === 'sucesso' ? 'sucesso' : 'erro';
+        mostrarMensagem(mensagens[registo], tipo);
+
+        /*
+            Remove o parâmetro ?registo=... do URL depois de mostrar a mensagem,
+            para a mensagem não voltar a aparecer ao recarregar a página.
+        */
         window.history.replaceState({}, document.title, 'login.html');
     }
 }
 
-function setupLoginAjax(){
+/* =========================
+   LOGIN COM FETCH + JSON
+========================= */
+
+function setupLoginAjax() {
     const formLogin = document.getElementById('form-login');
-    if (!formLogin) return;
+
+    if (!formLogin) {
+        return;
+    }
 
     formLogin.addEventListener('submit', event => {
         event.preventDefault();
+
         const dados = new FormData(formLogin);
 
         fetch('scripts/login.php', {
             method: 'POST',
             body: dados
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro na resposta do servidor.');
+            }
+
+            return response.json();
+        })
         .then(data => {
             if (data.sucesso) {
                 window.location.href = data.redirect;
             } else {
-                alert(data.mensagem || 'Não foi possível iniciar sessão.');
+                mostrarMensagem(data.mensagem || 'Credenciais inválidas.', 'erro');
             }
         })
         .catch(error => {
             console.error(error);
-            alert('Ocorreu um erro ao tentar iniciar sessão.');
+            mostrarMensagem('Ocorreu um erro ao tentar iniciar sessão.', 'erro');
         });
     });
 }
 
+/* =========================
+   ABAS DO PAINEL ADMIN
+========================= */
+
+function setupTabsAdmin() {
+    document.addEventListener('click', event => {
+        const tabBtn = event.target.closest('[data-tab]');
+
+        if (!tabBtn) {
+            return;
+        }
+
+        document.querySelectorAll('[data-tab]').forEach(botao => {
+            botao.classList.remove('active');
+        });
+
+        document.querySelectorAll('.tab-content').forEach(conteudo => {
+            conteudo.classList.remove('active');
+        });
+
+        tabBtn.classList.add('active');
+
+        const alvo = document.getElementById(tabBtn.dataset.tab);
+
+        if (alvo) {
+            alvo.classList.add('active');
+        }
+    });
+}
+
+/* =========================
+   INICIALIZAÇÃO
+========================= */
 
 document.addEventListener('DOMContentLoaded', () => {
-    processLoginMessages(); setupLoginAjax();
-    updateCartCounter(); renderCart();
-    if(document.body.dataset.clearCart === '1') { clearCart(); renderCart(); updateCartCounter(); }
+    processLoginMessages();
+    setupLoginAjax();
+    setupTabsAdmin();
 });

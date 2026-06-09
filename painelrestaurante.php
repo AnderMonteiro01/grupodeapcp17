@@ -31,45 +31,14 @@ $restaurante = $result->fetchArray(SQLITE3_ASSOC);
 
 $restauranteId = $restaurante ? (int)$restaurante['id'] : 0;
 
-/* Se existir restaurante associado, processar ações */
+/*
+    Regra após pré-avaliação:
+    O restaurante NÃO altera os dados institucionais do restaurante.
+    Nome, categoria, morada e estado ativo/inativo são controlados pelo administrador.
+    O restaurante apenas gere menu/produtos e encomendas.
+*/
+
 if ($restaurante) {
-
-    /* Atualizar dados principais do restaurante */
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualizar_restaurante') {
-        $nome = trim($_POST['nome'] ?? '');
-        $categoria = trim($_POST['categoria'] ?? '');
-        $morada = trim($_POST['morada'] ?? '');
-        $ativo = isset($_POST['ativo']) ? 1 : 0;
-
-        if ($nome === '') {
-            $erro = 'O nome do restaurante é obrigatório.';
-        } else {
-            $stmt = $db->prepare("
-                UPDATE restaurantes
-                SET nome = :nome,
-                    categoria = :categoria,
-                    morada = :morada,
-                    ativo = :ativo
-                WHERE id = :id
-                  AND utilizador_id = :utilizador_id
-            ");
-
-            $stmt->bindValue(':nome', $nome, SQLITE3_TEXT);
-            $stmt->bindValue(':categoria', $categoria, SQLITE3_TEXT);
-            $stmt->bindValue(':morada', $morada, SQLITE3_TEXT);
-            $stmt->bindValue(':ativo', $ativo, SQLITE3_INTEGER);
-            $stmt->bindValue(':id', $restauranteId, SQLITE3_INTEGER);
-            $stmt->bindValue(':utilizador_id', $userId, SQLITE3_INTEGER);
-            $stmt->execute();
-
-            $mensagem = 'Dados do restaurante atualizados com sucesso.';
-
-            $restaurante['nome'] = $nome;
-            $restaurante['categoria'] = $categoria;
-            $restaurante['morada'] = $morada;
-            $restaurante['ativo'] = $ativo;
-        }
-    }
 
     /* Adicionar produto/menu */
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'adicionar_produto') {
@@ -250,7 +219,7 @@ if ($restaurante) {
     }
 }
 
-/* Recarregar dados do restaurante após possíveis updates */
+/* Recarregar dados do restaurante */
 if ($restauranteId > 0) {
     $stmt = $db->prepare("
         SELECT id, utilizador_id, nome, categoria, morada, ativo
@@ -370,47 +339,26 @@ if ($restaurante) {
         <?php else: ?>
 
             <section class="gestao-restaurante">
-                <h3>Dados do Restaurante</h3>
+                <h3>Restaurante associado</h3>
 
-                <form method="POST" action="painelrestaurante.php" class="form-admin">
-                    <input type="hidden" name="acao" value="atualizar_restaurante">
+                <div class="card">
+                    <p><strong>Nome:</strong> <?= h($restaurante['nome']) ?></p>
+                    <p><strong>Categoria:</strong> <?= h($restaurante['categoria'] ?? 'Sem categoria') ?></p>
+                    <p><strong>Morada:</strong> <?= h($restaurante['morada'] ?? 'Sem morada') ?></p>
+                    <p>
+                        <strong>Estado:</strong>
+                        <?php if ((int)$restaurante['ativo'] === 1): ?>
+                            <span class="estado aberto">Ativo</span>
+                        <?php else: ?>
+                            <span class="estado fechado">Inativo</span>
+                        <?php endif; ?>
+                    </p>
 
-                    <label>Nome do restaurante</label>
-                    <input 
-                        type="text" 
-                        name="nome" 
-                        value="<?= h($restaurante['nome']) ?>" 
-                        required
-                    >
-
-                    <label>Categoria</label>
-                    <input 
-                        type="text" 
-                        name="categoria" 
-                        value="<?= h($restaurante['categoria'] ?? '') ?>"
-                    >
-
-                    <label>Morada</label>
-                    <input 
-                        type="text" 
-                        name="morada" 
-                        value="<?= h($restaurante['morada'] ?? '') ?>"
-                    >
-
-                    <label class="checkbox-linha">
-                        <input 
-                            type="checkbox" 
-                            name="ativo" 
-                            value="1" 
-                            <?= (int)$restaurante['ativo'] === 1 ? 'checked' : '' ?>
-                        >
-                        Restaurante ativo/disponível
-                    </label>
-
-                    <button type="submit" class="btn-primary">
-                        Guardar dados
-                    </button>
-                </form>
+                    <p class="small">
+                        Os dados principais do restaurante são geridos pelo administrador.
+                        Neste painel pode gerir apenas o menu e as encomendas.
+                    </p>
+                </div>
             </section>
 
             <section class="gestao-menu">
@@ -523,7 +471,7 @@ if ($restaurante) {
                                             </label>
                                         </td>
 
-                                        <td>
+                                        <td class="acoes">
                                             <button type="submit" class="btn-primary">
                                                 Guardar
                                             </button>

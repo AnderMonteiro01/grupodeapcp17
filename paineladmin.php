@@ -67,7 +67,7 @@ $totalRest=$db->querySingle("SELECT COUNT(*) FROM restaurantes");
 $totalEnc=$db->querySingle("SELECT COUNT(*) FROM encomendas");
 ?>
 <!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Painel Admin | FoodToGo</title><link rel="stylesheet" href="styles/styles.css"></head>
-<body class="pagina-painel"><header><h1>FoodToGo</h1><nav><a href="index.php">Home</a><a href="restaurantes.php">Restaurantes</a><span class="nav-utilizador">Admin: <?= h($_SESSION['nome']) ?></span><a href="scripts/logout.php" class="nav-destaque">Sair</a></nav></header>
+<body class="pagina-painel"><header><h1 class="logo">Food<span>ToGo</span></h1><nav><a href="index.php">Home</a><a href="restaurantes.php">Restaurantes</a><span class="nav-utilizador">Admin: <?= h($_SESSION['nome']) ?></span><a href="scripts/logout.php" class="nav-destaque">Sair</a></nav></header>
 <main><section class="painel-container"><div class="titulo-pagina"><h2>Painel Administrador</h2><p>Gestão da plataforma: utilizadores, restaurantes e associação entre ambos.</p></div>
 <?php if($mensagem):?><div class="mensagem-ok"><?=h($mensagem)?></div><?php endif;?><?php if($erro):?><div class="mensagem-erro"><?=h($erro)?></div><?php endif;?>
 <div class="painel-grid"><div class="card"><h3><?= (int)$totalUsers ?></h3><p>Utilizadores</p></div><div class="card"><h3><?= (int)$totalRest ?></h3><p>Restaurantes</p></div><div class="card"><h3><?= (int)$totalEnc ?></h3><p>Encomendas</p></div></div>

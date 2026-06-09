@@ -330,7 +330,7 @@ if ($restaurante) {
 <body class="pagina-painel">
 
 <header>
-    <h1>FoodToGo</h1>
+    <h1 class="logo">Food<span>ToGo</span></h1>
 
     <nav>
         <a href="index.php">Home</a>

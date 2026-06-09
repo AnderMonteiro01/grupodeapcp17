@@ -68,7 +68,7 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
 <body class="pagina-restaurantes">
 
 <header>
-    <h1>FoodToGo</h1>
+    <h1 class="logo">Food<span>ToGo</span></h1>
 
     <nav>
         <a href="index.php">Home</a>

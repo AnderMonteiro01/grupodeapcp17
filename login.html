@@ -6,7 +6,9 @@
     <title>Login / Registo - FoodToGo</title>
     <link rel="stylesheet" href="styles/styles.css">
 </head>
+
 <body class="pagina-login">
+
 <header>
     <div class="logo">Food<span>ToGo</span></div>
     <nav>
@@ -14,31 +16,56 @@
         <a href="restaurantes.php">Restaurantes</a>
     </nav>
 </header>
+
 <section class="auth-section">
+
+    <!-- LOGIN -->
     <div class="auth-box">
         <h2>Entrar</h2>
+
         <form id="form-login" action="scripts/login.php" method="POST">
             <label>Username ou Email</label>
             <input type="text" name="login" placeholder="Username ou email" required>
+
             <label>Palavra-passe</label>
             <input type="password" name="password" placeholder="A sua palavra-passe" required>
-            <div class="auth-buttons"><button type="submit" class="btn-primary">Entrar</button></div>
+
+            <div class="auth-buttons">
+                <button type="submit" class="btn-primary">Entrar</button>
+            </div>
         </form>
-        <p class="small">Testes: admin/admin123, restaurante/rest123, cliente/cliente123</p>
     </div>
+
+    <!-- REGISTO -->
     <div class="auth-box">
         <h2>Criar Conta</h2>
+
         <form action="scripts/novoregisto.php" method="POST">
-            <label>Nome</label><input type="text" name="nome" required>
-            <label>Username</label><input type="text" name="username" required>
-            <label>Email</label><input type="email" name="email" required>
-            <label>Palavra-passe</label><input type="password" name="password" required>
-            <div class="auth-buttons"><button type="submit" class="btn-secondary">Criar Conta</button></div>
-            <p class="small">Novas contas são criadas como cliente. O admin pode alterar o estatuto para restaurante.</p>
+            <label>Nome</label>
+            <input type="text" name="nome" required>
+
+            <label>Username</label>
+            <input type="text" name="username" required>
+
+            <label>Email</label>
+            <input type="email" name="email" required>
+
+            <label>Palavra-passe</label>
+            <input type="password" name="password" required>
+
+            <div class="auth-buttons">
+                <button type="submit" class="btn-secondary">Criar Conta</button>
+            </div>
         </form>
     </div>
+
 </section>
-<footer><p>© 2026 FoodToGo</p><div class="social"><span>Facebook</span><span>Instagram</span><span>Twitter</span></div></footer>
+
+<footer>
+    <p>© 2026 FoodToGo</p>
+</footer>
+
 <script src="scripts/app.js"></script>
+
 </body>
 </html>

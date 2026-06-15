@@ -41,6 +41,32 @@ function csrf_validate($token) {
         && hash_equals($_SESSION['csrf_token'], $token);
 }
 
+function estado_encomenda_texto($estado) {
+    $textos = [
+        'recebida' => 'Recebida',
+        'em preparação' => 'Em Preparação',
+        'em preparacao' => 'Em Preparação',
+        'concluída' => 'Concluída',
+        'concluida' => 'Concluída',
+        'cancelada' => 'Cancelada'
+    ];
+
+    return $textos[$estado] ?? ucfirst((string)$estado);
+}
+
+function estado_encomenda_classe($estado) {
+    $classes = [
+        'recebida' => 'estado-recebida',
+        'em preparação' => 'estado-preparacao',
+        'em preparacao' => 'estado-preparacao',
+        'concluída' => 'estado-concluida',
+        'concluida' => 'estado-concluida',
+        'cancelada' => 'estado-cancelada'
+    ];
+
+    return $classes[$estado] ?? 'estado-desconhecido';
+}
+
 function require_login($tipo = null) {
     ensure_session_started();
 

@@ -77,6 +77,7 @@ O restaurante não altera diretamente os dados principais do restaurante, como n
 * Associar utilizadores a restaurantes;
 * Ativar ou inativar restaurantes;
 * Impedir associação de dois restaurantes ao mesmo utilizador;
+* Impedir promoção de utilizadores a administrador pelo painel;
 * Impedir que um utilizador associado a restaurante volte diretamente a cliente;
 * Consultar encomendas da plataforma.
 
@@ -99,6 +100,8 @@ O utilizador restaurante só existe como tal após associação feita pelo admin
 ### Administrador
 
 O administrador controla a criação e associação dos restaurantes. Cada restaurante pode ter no máximo um utilizador associado, e cada utilizador só pode estar associado a um restaurante.
+
+O painel de administração não permite transformar clientes em administradores. O tipo Administrador é uma permissão sensível e deve ser definido apenas diretamente na base de dados principal do projeto.
 
 Se um restaurante deixar de operar, deve ser colocado como inativo. Dessa forma, deixa de aparecer para clientes e visitantes, mas o histórico de encomendas é preservado.
 
@@ -199,7 +202,7 @@ Como Administrador, quero criar, editar, ativar, inativar ou remover restaurante
 Prioridade: Alta
 
 **ADM03 – Gerir utilizadores**
-Como Administrador, quero consultar e gerir contas de clientes, restaurantes e administradores para manter a plataforma organizada.
+Como Administrador, quero consultar e gerir dados básicos das contas para manter a plataforma organizada, sem promover utilizadores a administrador pelo painel.
 Prioridade: Média
 
 **ADM04 – Consultar encomendas da plataforma**
@@ -304,7 +307,7 @@ Após executar `php scripts/criar_bd.php` na linha de comandos, é criado/atuali
 | ------------- | ----------- | ---------- |
 | Administrador | admin       | admin123   |
 
-As contas de cliente devem ser criadas pelo formulário de registo. Depois disso, o administrador pode associar um utilizador a um restaurante pelo painel de administração.
+As contas de cliente devem ser criadas pelo formulário de registo. Depois disso, o administrador pode associar um utilizador a um restaurante pelo painel de administração. A criação ou alteração de contas Administrador não é feita pelo painel.
 
 ---
 

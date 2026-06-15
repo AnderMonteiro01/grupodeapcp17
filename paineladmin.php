@@ -97,24 +97,24 @@ function utilizadorAtualDoRestaurante($db, $restauranteId) {
         : 0;
 }
 
-function reporTipoClienteSeSemRestaurante($db, $utilizadorId) {
-    if ($utilizadorId <= 0) {
-        return;
-    }
+function tipoUtilizadorTexto($tipo) {
+    $textos = [
+        'cliente' => 'Cliente',
+        'restaurante' => 'Restaurante',
+        'admin' => 'Administrador'
+    ];
 
-    if (utilizadorAssociadoARestaurante($db, $utilizadorId)) {
-        return;
-    }
+    return $textos[$tipo] ?? ucfirst((string)$tipo);
+}
 
-    $stmt = $db->prepare("
-        UPDATE utilizadores
-        SET tipo = 'cliente'
-        WHERE id = :id
-          AND tipo = 'restaurante'
-    ");
+function tipoUtilizadorClasse($tipo) {
+    $classes = [
+        'cliente' => 'cliente',
+        'restaurante' => 'restaurante',
+        'admin' => 'admin'
+    ];
 
-    $stmt->bindValue(':id', $utilizadorId, SQLITE3_INTEGER);
-    $stmt->execute();
+    return $classes[$tipo] ?? 'cliente';
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -130,9 +130,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nome = trim($_POST['nome'] ?? '');
             $username = trim($_POST['username'] ?? '');
             $email = trim($_POST['email'] ?? '');
-            $tipo = trim($_POST['tipo'] ?? '');
-
-            $tiposPermitidos = ['cliente', 'restaurante', 'admin'];
 
             if ($id <= 0) {
                 throw new Exception('Utilizador inválido.');
@@ -146,51 +143,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Email inválido.');
             }
 
-            if (!in_array($tipo, $tiposPermitidos, true)) {
-                throw new Exception('Tipo de utilizador inválido.');
-            }
-
-            if ($id === (int)$_SESSION['user_id'] && $tipo !== 'admin') {
-                throw new Exception('Não pode remover o seu próprio perfil de administrador.');
-            }
-
-            $restauranteAssociado = utilizadorAssociadoARestaurante($db, $id);
-
-            /*
-                Regra:
-                - Um utilizador só se torna restaurante através da associação
-                  feita na aba Restaurantes.
-                - Se já está associado a restaurante, fica bloqueado como restaurante.
-                - Se não está associado, não pode ser alterado manualmente para restaurante aqui.
-            */
-
-            if ($restauranteAssociado && $tipo !== 'restaurante') {
-                throw new Exception(
-                    'Este utilizador está associado ao restaurante "' .
-                    $restauranteAssociado['nome'] .
-                    '". Não pode voltar a cliente/admin diretamente. Para suspender a atividade, coloque o restaurante como inativo.'
-                );
-            }
-
-            if (!$restauranteAssociado && $tipo === 'restaurante') {
-                throw new Exception(
-                    'Não altere o utilizador para restaurante nesta aba. Para transformar um utilizador em restaurante, associe-o a um restaurante na aba Restaurantes.'
-                );
-            }
-
             $stmt = $db->prepare("
                 UPDATE utilizadores
                 SET nome = :nome,
                     username = :username,
-                    email = :email,
-                    tipo = :tipo
+                    email = :email
                 WHERE id = :id
             ");
 
             $stmt->bindValue(':nome', $nome, SQLITE3_TEXT);
             $stmt->bindValue(':username', $username, SQLITE3_TEXT);
             $stmt->bindValue(':email', $email, SQLITE3_TEXT);
-            $stmt->bindValue(':tipo', $tipo, SQLITE3_TEXT);
             $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
             $stmt->execute();
 
@@ -337,7 +300,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             validarUtilizadorParaRestaurante($db, $utilizadorId, $id);
-            $utilizadorAnteriorId = utilizadorAtualDoRestaurante($db, $id);
 
             $stmt = $db->prepare("
                 UPDATE restaurantes
@@ -374,10 +336,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute();
             }
 
-            if ($utilizadorAnteriorId > 0 && $utilizadorAnteriorId !== $utilizadorId) {
-                reporTipoClienteSeSemRestaurante($db, $utilizadorAnteriorId);
-            }
-
             $mensagem = 'Restaurante atualizado com sucesso.';
         }
 
@@ -387,8 +345,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($id <= 0) {
                 throw new Exception('Restaurante inválido.');
             }
-
-            $utilizadorAnteriorId = utilizadorAtualDoRestaurante($db, $id);
 
             $stmt = $db->prepare("
                 SELECT COUNT(*)
@@ -426,8 +382,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
                 $stmt->execute();
-
-                reporTipoClienteSeSemRestaurante($db, $utilizadorAnteriorId);
 
                 $mensagem = 'Restaurante removido com sucesso.';
             }
@@ -504,6 +458,8 @@ $encomendas = $db->query("
         e.data,
         e.estado,
         e.total,
+        e.contacto_cliente,
+        e.morada_entrega,
         u.nome AS cliente,
         r.nome AS restaurante
     FROM encomendas e
@@ -610,9 +566,9 @@ function optionsUtilizadoresRestaurante($utilizadoresParaAssociar, $utilizadorAt
             <h3>Gerir Utilizadores</h3>
 
             <p class="small">
-                O tipo Restaurante não é escolhido manualmente nesta aba.
-                Para transformar um utilizador em restaurante, associe-o a um restaurante na aba Restaurantes.
-                Se já estiver associado, o tipo fica bloqueado.
+                O tipo da conta é apenas informativo nesta aba.
+                Novas contas são criadas como Cliente.
+                Restaurante é atribuído pela associação na aba Restaurantes, e Administrador só deve ser definido diretamente na base de dados principal.
             </p>
 
             <table class="tabela-admin">
@@ -656,32 +612,21 @@ function optionsUtilizadoresRestaurante($utilizadoresParaAssociar, $utilizadorAt
                             </td>
 
                             <td>
-                                <select form="<?= h($formUtilizador) ?>" name="tipo">
-                                    <?php if ($u['restaurante_associado_id']): ?>
+                                <span class="estado <?= h(tipoUtilizadorClasse($u['tipo'])) ?>">
+                                    <?= h(tipoUtilizadorTexto($u['tipo'])) ?>
+                                </span>
 
-                                        <option value="restaurante" selected>
-                                            Restaurante
-                                        </option>
-
-                                    <?php else: ?>
-
-                                        <option value="cliente" <?= $u['tipo'] === 'cliente' ? 'selected' : '' ?>>
-                                            Cliente
-                                        </option>
-
-                                        <option value="admin" <?= $u['tipo'] === 'admin' ? 'selected' : '' ?>>
-                                            Admin
-                                        </option>
-
-                                    <?php endif; ?>
-                                </select>
-
-                                <?php if ($u['restaurante_associado_id']): ?>
+                                <?php if ($u['tipo'] === 'admin'): ?>
                                     <br>
                                     <span class="small">
-                                        Tipo bloqueado por associação.
+                                        Administrador definido fora do painel.
                                     </span>
-                                <?php else: ?>
+                                <?php elseif ($u['restaurante_associado_id']): ?>
+                                    <br>
+                                    <span class="small">
+                                        Tipo atribuído pela associação ao restaurante.
+                                    </span>
+                                <?php elseif ($u['tipo'] === 'cliente'): ?>
                                     <br>
                                     <span class="small">
                                         Para tornar restaurante, associe na aba Restaurantes.
@@ -753,6 +698,7 @@ function optionsUtilizadoresRestaurante($utilizadoresParaAssociar, $utilizadorAt
                 Cada restaurante pode ter no máximo um utilizador associado.
                 Cada utilizador também só pode estar associado a um restaurante.
                 Ao associar um cliente a um restaurante, o sistema altera automaticamente o tipo desse utilizador para Restaurante.
+                A reversão para Cliente ou a promoção para Administrador não é feita por este painel.
             </p>
 
             <table class="tabela-admin">
@@ -847,6 +793,7 @@ function optionsUtilizadoresRestaurante($utilizadoresParaAssociar, $utilizadorAt
                     <tr>
                         <th>Nº</th>
                         <th>Cliente</th>
+                        <th>Contacto / Morada</th>
                         <th>Restaurante</th>
                         <th>Data</th>
                         <th>Estado</th>
@@ -863,16 +810,27 @@ function optionsUtilizadoresRestaurante($utilizadoresParaAssociar, $utilizadorAt
                         <tr>
                             <td>#<?= (int)$e['id'] ?></td>
                             <td><?= h($e['cliente']) ?></td>
+                            <td>
+                                <strong>Contacto:</strong><br>
+                                <?= h($e['contacto_cliente'] ?? '') ?><br><br>
+
+                                <strong>Morada:</strong><br>
+                                <?= h($e['morada_entrega'] ?? '') ?>
+                            </td>
                             <td><?= h($e['restaurante']) ?></td>
                             <td><?= h($e['data']) ?></td>
-                            <td><?= h($e['estado']) ?></td>
+                            <td>
+                                <span class="estado <?= h(estado_encomenda_classe($e['estado'])) ?>">
+                                    <?= h(estado_encomenda_texto($e['estado'])) ?>
+                                </span>
+                            </td>
                             <td><?= number_format((float)$e['total'], 2, ',', '.') ?> €</td>
                         </tr>
                     <?php endwhile; ?>
 
                     <?php if (!$tem): ?>
                         <tr>
-                            <td colspan="6">Sem encomendas.</td>
+                            <td colspan="7">Sem encomendas.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

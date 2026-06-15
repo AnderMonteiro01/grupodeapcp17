@@ -568,8 +568,8 @@ if ($restaurante) {
                                     </td>
 
                                     <td>
-                                        <span class="estado aberto">
-                                            <?= h($encomenda['estado']) ?>
+                                        <span class="estado <?= h(estado_encomenda_classe($encomenda['estado'])) ?>">
+                                            <?= h(estado_encomenda_texto($encomenda['estado'])) ?>
                                         </span>
                                     </td>
 
@@ -591,7 +591,7 @@ if ($restaurante) {
                                                 </option>
 
                                                 <option value="em preparação" <?= $encomenda['estado'] === 'em preparação' ? 'selected' : '' ?>>
-                                                    Em preparação
+                                                    Em Preparação
                                                 </option>
 
                                                 <option value="concluída" <?= $encomenda['estado'] === 'concluída' ? 'selected' : '' ?>>

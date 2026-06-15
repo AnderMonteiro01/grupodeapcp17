@@ -370,8 +370,16 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                                         </td>
 
                                         <td>
-                                            <div class="quantidade-controlos">
-                                                <button type="button" class="btn-quantidade" data-menos>-</button>
+                                            <div class="quantidade-controlos" aria-label="Selecionar quantidade">
+                                                <button
+                                                    type="button"
+                                                    class="btn-quantidade btn-quantidade-remover"
+                                                    data-menos
+                                                    aria-label="Remover uma unidade"
+                                                    title="Remover uma unidade"
+                                                >
+                                                    &minus;
+                                                </button>
 
                                                 <input 
                                                     type="number"
@@ -382,9 +390,18 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                                                     class="input-quantidade"
                                                     data-quantidade
                                                     data-preco="<?= (float)$produto['preco'] ?>"
+                                                    aria-label="Quantidade de <?= h($produto['nome']) ?>"
                                                 >
 
-                                                <button type="button" class="btn-quantidade" data-mais>+</button>
+                                                <button
+                                                    type="button"
+                                                    class="btn-quantidade btn-quantidade-adicionar"
+                                                    data-mais
+                                                    aria-label="Adicionar uma unidade"
+                                                    title="Adicionar uma unidade"
+                                                >
+                                                    +
+                                                </button>
                                             </div>
                                         </td>
 
@@ -519,8 +536,8 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                                 </td>
 
                                 <td>
-                                    <span class="estado aberto">
-                                        <?= h($encomenda['estado']) ?>
+                                    <span class="estado <?= h(estado_encomenda_classe($encomenda['estado'])) ?>">
+                                        <?= h(estado_encomenda_texto($encomenda['estado'])) ?>
                                     </span>
                                 </td>
 

@@ -537,6 +537,46 @@ label {
     color: #9a5a00;
 }
 
+.estado.estado-recebida {
+    background: #e0f0ff;
+    color: #004f8f;
+}
+
+.estado.estado-preparacao {
+    background: #fff2d8;
+    color: #8a5a00;
+}
+
+.estado.estado-concluida {
+    background: #d8f5df;
+    color: #167a2f;
+}
+
+.estado.estado-cancelada {
+    background: #ffdede;
+    color: #a32020;
+}
+
+.estado.estado-desconhecido {
+    background: #eeeeee;
+    color: #555;
+}
+
+.estado.cliente {
+    background: #e0f0ff;
+    color: #004f8f;
+}
+
+.estado.restaurante {
+    background: #d8f5df;
+    color: #167a2f;
+}
+
+.estado.admin {
+    background: #fff2d8;
+    color: #8a5a00;
+}
+
 
 /* =========================
    RESTAURANTES / PRODUTOS
@@ -627,30 +667,70 @@ label {
 }
 
 .quantidade-controlos {
-    display: flex;
+    display: inline-grid;
+    grid-template-columns: 40px 58px 40px;
     align-items: center;
-    gap: 6px;
+    overflow: hidden;
+    width: max-content;
+    border: 1px solid #d7e3e3;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .btn-quantidade {
-    width: 28px;
-    height: 28px;
-    border: 1px solid #aaa;
-    background: #f8f8f8;
-    border-radius: 4px;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    background: #f5fbfa;
+    color: teal;
     cursor: pointer;
-    font-weight: bold;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .btn-quantidade:hover {
     background: teal;
     color: #fff;
-    border-color: teal;
+}
+
+.btn-quantidade:focus-visible,
+.input-quantidade:focus-visible {
+    outline: 3px solid rgba(255, 112, 67, 0.35);
+    outline-offset: -3px;
+}
+
+.btn-quantidade-remover {
+    border-right: 1px solid #d7e3e3;
+}
+
+.btn-quantidade-adicionar {
+    border-left: 1px solid #d7e3e3;
 }
 
 .input-quantidade {
-    width: 70px;
+    width: 58px;
+    height: 40px;
+    border: 0;
     text-align: center;
+    font-weight: 800;
+    color: #222;
+    background: #fff;
+    padding: 0;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.input-quantidade::-webkit-outer-spin-button,
+.input-quantidade::-webkit-inner-spin-button {
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 

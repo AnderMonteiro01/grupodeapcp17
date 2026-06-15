@@ -165,7 +165,7 @@ header h1,
 
 .logo a,
 a.logo {
-    color: inherit;
+    color: teal;
     text-decoration: none;
 }
 

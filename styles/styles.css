@@ -402,6 +402,15 @@ textarea.campo-invalido {
     line-height: 1.3;
 }
 
+.mensagem-campo:empty {
+    display: none;
+}
+
+.mensagem-campo-quantidade {
+    margin-top: 6px;
+    max-width: 150px;
+}
+
 label {
     font-weight: bold;
 }
@@ -636,6 +645,61 @@ label {
     max-width: 100%;
 }
 
+.tabela-menu-carrinho {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+
+.tabela-menu-carrinho .col-produto {
+    width: 42%;
+}
+
+.tabela-menu-carrinho .col-preco {
+    width: 18%;
+}
+
+.tabela-menu-carrinho .col-quantidade {
+    width: 25%;
+}
+
+.tabela-menu-carrinho .col-subtotal {
+    width: 15%;
+}
+
+.tabela-menu-carrinho th,
+.tabela-menu-carrinho td {
+    padding: 14px 18px;
+    vertical-align: middle;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.tabela-menu-carrinho th {
+    text-align: left;
+}
+
+.tabela-menu-carrinho th:nth-child(2),
+.tabela-menu-carrinho th:nth-child(4),
+.tabela-menu-carrinho td:nth-child(2),
+.tabela-menu-carrinho td:nth-child(4) {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.tabela-menu-carrinho th:nth-child(3),
+.tabela-menu-carrinho td:nth-child(3) {
+    text-align: center;
+}
+
+.tabela-menu-carrinho .quantidade-controlos {
+    margin: 0 auto;
+}
+
+.tabela-menu-carrinho tbody tr:last-child td {
+    border-bottom: 0;
+}
+
 .total {
     font-size: 20px;
     margin: 15px 0;
@@ -670,6 +734,19 @@ label {
 .campo-form input {
     width: 100%;
     box-sizing: border-box;
+}
+
+.campo-observacoes {
+    width: 100%;
+    height: 92px;
+    max-height: 92px;
+    resize: none;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.limite-observacoes {
+    margin-top: 6px;
 }
 
 .quantidade-controlos {

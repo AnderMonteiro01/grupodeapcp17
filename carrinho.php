@@ -18,6 +18,7 @@ $erro = '';
 
 $limitePorProduto = 10;
 $limiteTotalPedido = 20;
+$limiteObservacoes = 160;
 
 $restauranteId = isset($_GET['restaurante_id']) ? (int)$_GET['restaurante_id'] : 0;
 $modoConsultaHistorico = ($restauranteId <= 0);
@@ -136,6 +137,14 @@ if (
 
     if ($erro === '' && !preg_match('/^9[0-9]{8}$/', $contactoCliente)) {
         $erro = 'O telemóvel deve ter exatamente 9 dígitos e começar por 9.';
+    }
+
+    $tamanhoObservacoes = function_exists('mb_strlen')
+        ? mb_strlen($observacoes, 'UTF-8')
+        : strlen($observacoes);
+
+    if ($erro === '' && $tamanhoObservacoes > $limiteObservacoes) {
+        $erro = "As observações podem ter no máximo {$limiteObservacoes} caracteres.";
     }
 
     /*
@@ -342,7 +351,14 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
 
                         <h3>Menu disponível</h3>
 
-                        <table>
+                        <table class="tabela-menu-carrinho">
+                            <colgroup>
+                                <col class="col-produto">
+                                <col class="col-preco">
+                                <col class="col-quantidade">
+                                <col class="col-subtotal">
+                            </colgroup>
+
                             <thead>
                                 <tr>
                                     <th>Produto</th>
@@ -468,10 +484,17 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
 
                         <h4>Observações</h4>
                         <textarea 
+                            id="observacoes"
                             name="observacoes" 
-                            rows="4" 
+                            class="campo-observacoes"
+                            rows="3"
+                            maxlength="<?= (int)$limiteObservacoes ?>"
                             placeholder="Ex: sem cebola, entregar à porta..."
                         ></textarea>
+
+                        <p class="small limite-observacoes">
+                            Máximo de <?= (int)$limiteObservacoes ?> caracteres.
+                        </p>
 
                         <br><br>
 

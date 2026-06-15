@@ -91,7 +91,15 @@ function obterCaixaErro(campo) {
         erro = document.createElement('small');
         erro.id = idErro;
         erro.className = 'mensagem-campo';
-        campo.insertAdjacentElement('afterend', erro);
+
+        const controlosQuantidade = campo.closest('.quantidade-controlos');
+
+        if (controlosQuantidade) {
+            erro.classList.add('mensagem-campo-quantidade');
+            controlosQuantidade.insertAdjacentElement('afterend', erro);
+        } else {
+            campo.insertAdjacentElement('afterend', erro);
+        }
     }
 
     return erro;
@@ -336,6 +344,7 @@ function setupInfoGrupoRodape() {
 ========================= */
 
 window.mostrarMensagem = mostrarMensagem;
+window.validarCampo = validarCampo;
 window.validarFormulario = validarFormulario;
 
 document.addEventListener('DOMContentLoaded', () => {

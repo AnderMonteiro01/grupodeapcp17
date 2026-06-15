@@ -136,6 +136,10 @@ function setupCarrinho() {
             }
 
             atualizarTotais();
+
+            if (typeof window.validarCampo === 'function') {
+                window.validarCampo(input);
+            }
         });
     });
 

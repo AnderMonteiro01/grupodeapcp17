@@ -317,4 +317,5 @@ As contas de cliente devem ser criadas pelo formulário de registo. Depois disso
 * Cada computador deve recriar a sua própria base de dados local;
 * Restaurantes inativos ou sem utilizador associado não aparecem na lista pública de restaurantes;
 * Produtos indisponíveis não devem ser usados para novas encomendas;
+* O pagamento não é processado pela aplicação; nesta versão, considera-se pagamento no ato da entrega;
 * O histórico de encomendas deve ser preservado sempre que possível.

@@ -641,6 +641,12 @@ label {
     margin: 15px 0;
 }
 
+.nota-pagamento {
+    margin: -6px 0 18px;
+    font-size: 13px;
+    color: #666;
+}
+
 .dados-entrega-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;

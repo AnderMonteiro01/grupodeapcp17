@@ -1,6 +1,12 @@
 <?php
 try {
-    $db = new SQLite3(__DIR__ . '/../data/foodtogo.db');
+    $databaseDir = __DIR__ . '/../data';
+
+    if (!is_dir($databaseDir) && !mkdir($databaseDir, 0775, true) && !is_dir($databaseDir)) {
+        throw new Exception('Não foi possível criar a pasta da base de dados.');
+    }
+
+    $db = new SQLite3($databaseDir . '/foodtogo.db');
     $db->enableExceptions(true);
     $db->exec('PRAGMA foreign_keys = ON');
 } catch (Exception $e) {

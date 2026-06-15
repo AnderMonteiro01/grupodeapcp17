@@ -432,6 +432,10 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                             <strong>Total: <span id="total-carrinho">0,00 €</span></strong>
                         </p>
 
+                        <p class="nota-pagamento">
+                            Pagamento no ato da entrega.
+                        </p>
+
                         <h4>Dados para entrega/contacto</h4>
 
                         <div class="dados-entrega-grid">

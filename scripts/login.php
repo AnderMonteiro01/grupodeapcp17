@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once 'db.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -35,6 +37,8 @@ if (!$user || !password_verify($password, $user['password'])) {
     ]);
     exit;
 }
+
+session_regenerate_id(true);
 
 $_SESSION['user_id'] = (int)$user['id'];
 $_SESSION['nome'] = $user['nome'];

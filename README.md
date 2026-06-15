@@ -212,6 +212,62 @@ Prioridade: Alta
 
 ---
 
+## Estado de Implementação das User Stories
+
+| Ator | User Story | Descrição | Prioridade | Implementado |
+| ---- | ---------- | --------- | ---------- | ------------ |
+| Visitante | VIS01 | Visualizar restaurantes disponíveis | Alta | 100% |
+| Visitante | VIS02 | Visualizar menus dos restaurantes | Alta | 100% |
+| Visitante | VIS03 | Criar conta | Média | 100% |
+| Visitante | VIS04 | Iniciar sessão | Alta | 100% |
+| Cliente | CLI01 | Escolher produtos de um restaurante | Alta | 100% |
+| Cliente | CLI02 | Alterar quantidades antes de confirmar | Média | 100% |
+| Cliente | CLI03 | Confirmar encomenda | Alta | 100% |
+| Cliente | CLI04 | Acompanhar estado da encomenda | Média | 100% |
+| Cliente | CLI05 | Consultar histórico de encomendas | Baixa | 100% |
+| Restaurante | RES01 | Aceder ao restaurante associado | Alta | 100% |
+| Restaurante | RES02 | Iniciar sessão | Alta | 100% |
+| Restaurante | RES03 | Gerir menu | Alta | 100% |
+| Restaurante | RES04 | Gerir preços e produtos | Alta | 100% |
+| Restaurante | RES05 | Atualizar disponibilidade dos produtos | Média | 100% |
+| Restaurante | RES06 | Consultar encomendas recebidas | Alta | 100% |
+| Restaurante | RES07 | Atualizar estado da encomenda | Alta | 100% |
+| Restaurante | RES08 | Suspender operação do restaurante | Baixa | 80% |
+| Administrador | ADM01 | Iniciar sessão no painel de administração | Alta | 100% |
+| Administrador | ADM02 | Gerir restaurantes | Alta | 100% |
+| Administrador | ADM03 | Gerir utilizadores | Média | 100% |
+| Administrador | ADM04 | Consultar encomendas da plataforma | Média | 100% |
+| Administrador | ADM05 | Associar utilizadores a restaurantes | Alta | 100% |
+
+Nota: a suspensão/reativação do restaurante foi implementada pelo administrador através do estado ativo/inativo, por isso a user story RES08 fica marcada como 80%.
+
+---
+
+## Funcionalidades JavaScript e Testes
+
+| Página | Formulário/funcionalidade | Campos obrigatórios ou validados | Resultado |
+| ------ | ------------------------- | -------------------------------- | --------- |
+| `login.html` | Login | Username/email e palavra-passe | Validado no browser e submetido por AJAX |
+| `login.html` | Registo | Nome, username, email e palavra-passe | Validado no browser antes da submissão |
+| `carrinho.php` | Confirmação de encomenda | Quantidade, morada e telemóvel | Validação de limites, total e contacto |
+| `painelrestaurante.php` | Adicionar/editar produto | Nome e preço | Preço tem de ser superior a zero |
+| `painelrestaurante.php` | Estado da encomenda | Estado selecionado | Atualização feita pelo painel |
+| `paineladmin.php` | Gerir utilizadores | Nome, username e email | Validação visual dos campos |
+| `paineladmin.php` | Criar/editar restaurante | Nome e dados de associação | Validação visual dos campos |
+| `paineladmin.php` | Abas do painel | Botões de navegação | Conteúdo mostrado/ocultado por DOM |
+| Rodapé das páginas | Sobre o projeto/grupo | Hover/foco mostra legenda; clique abre/fecha | Informação apresentada/ocultada por DOM |
+
+Testes realizados:
+
+* validação de sintaxe PHP com `php -l`;
+* validação de sintaxe JavaScript com `node --check`;
+* teste de login dos perfis existentes;
+* teste de permissões entre perfis;
+* teste de navegação pública;
+* verificação de consistência da base de dados SQLite.
+
+---
+
 ## Estrutura principal de páginas
 
 A aplicação foi organizada em páginas principais:
@@ -223,7 +279,7 @@ A aplicação foi organizada em páginas principais:
 * `painelrestaurante.php` — gestão de menu e encomendas pelo restaurante;
 * `paineladmin.php` — gestão de utilizadores, restaurantes e encomendas pelo administrador.
 
-Alguns ficheiros `.html` adicionais existem apenas como apoio/redirecionamento ou referência da fase inicial do projeto, uma vez que a versão funcional passou a usar páginas PHP para permitir sessões, permissões e ligação à base de dados.
+A versão funcional usa páginas PHP para sessões, permissões e ligação à base de dados. O ficheiro `login.html` foi mantido como página estática de login/registo.
 
 ---
 
@@ -240,23 +296,22 @@ A aplicação utiliza PHP para processar sessões, permissões e comunicação c
 
 ---
 
-## Utilizadores de teste
+## Utilizador inicial
 
-Após executar `scripts/criar_bd.php`, são criados/atualizados os seguintes utilizadores de teste:
+Após executar `php scripts/criar_bd.php` na linha de comandos, é criado/atualizado apenas o administrador inicial:
 
 | Tipo          | Username    | Password   |
 | ------------- | ----------- | ---------- |
 | Administrador | admin       | admin123   |
-| Restaurante   | restaurante | rest123    |
-| Cliente       | cliente     | cliente123 |
+
+As contas de cliente devem ser criadas pelo formulário de registo. Depois disso, o administrador pode associar um utilizador a um restaurante pelo painel de administração.
 
 ---
 
 ## Notas de funcionamento
 
-* A base de dados local é criada pelo ficheiro `scripts/criar_bd.php`;
-* O ficheiro `data/foodtogo.db` não deve ser versionado no Git;
+* A base de dados local é criada pelo ficheiro `scripts/criar_bd.php`, executado apenas pela linha de comandos (Ex: C:\xampp\php\php.exe .\scripts\criar_bd.php);
 * Cada computador deve recriar a sua própria base de dados local;
-* Restaurantes inativos não aparecem na lista pública de restaurantes;
+* Restaurantes inativos ou sem utilizador associado não aparecem na lista pública de restaurantes;
 * Produtos indisponíveis não devem ser usados para novas encomendas;
 * O histórico de encomendas deve ser preservado sempre que possível.

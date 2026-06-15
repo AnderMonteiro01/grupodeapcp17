@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once __DIR__ . '/scripts/db.php';
 
 if (!function_exists('h')) {
@@ -8,10 +10,7 @@ if (!function_exists('h')) {
     }
 }
 
-if (!isset($_SESSION['user_id']) || ($_SESSION['tipo'] ?? '') !== 'restaurante') {
-    header('Location: login.html');
-    exit;
-}
+require_login('restaurante');
 
 $userId = (int)$_SESSION['user_id'];
 $mensagem = '';
@@ -39,9 +38,15 @@ $restauranteId = $restaurante ? (int)$restaurante['id'] : 0;
 */
 
 if ($restaurante) {
+    $isPost = $_SERVER['REQUEST_METHOD'] === 'POST';
+    $postValido = $isPost && csrf_validate($_POST['csrf_token'] ?? '');
+
+    if ($isPost && !$postValido) {
+        $erro = 'Pedido inválido. Atualize a página e tente novamente.';
+    }
 
     /* Adicionar produto/menu */
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'adicionar_produto') {
+    if ($postValido && ($_POST['acao'] ?? '') === 'adicionar_produto') {
         $nomeProduto = trim($_POST['nome_produto'] ?? '');
         $descricaoProduto = trim($_POST['descricao_produto'] ?? '');
         $precoProduto = str_replace(',', '.', trim($_POST['preco_produto'] ?? ''));
@@ -81,7 +86,7 @@ if ($restaurante) {
     }
 
     /* Atualizar produto/menu */
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualizar_produto') {
+    if ($postValido && ($_POST['acao'] ?? '') === 'atualizar_produto') {
         $produtoId = (int)($_POST['produto_id'] ?? 0);
         $nomeProduto = trim($_POST['nome_produto'] ?? '');
         $descricaoProduto = trim($_POST['descricao_produto'] ?? '');
@@ -118,7 +123,7 @@ if ($restaurante) {
     }
 
     /* Remover produto/menu */
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'remover_produto') {
+    if ($postValido && ($_POST['acao'] ?? '') === 'remover_produto') {
         $produtoId = (int)($_POST['produto_id'] ?? 0);
 
         if ($produtoId <= 0) {
@@ -171,7 +176,7 @@ if ($restaurante) {
     }
 
     /* Atualizar estado da encomenda */
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualizar_estado') {
+    if ($postValido && ($_POST['acao'] ?? '') === 'atualizar_estado') {
         $encomendaId = (int)($_POST['encomenda_id'] ?? 0);
         $novoEstado = trim($_POST['estado'] ?? '');
 
@@ -299,7 +304,7 @@ if ($restaurante) {
 <body class="pagina-painel">
 
 <header>
-    <h1 class="logo">Food<span>ToGo</span></h1>
+    <h1 class="logo"><a href="index.php">Food<span>ToGo</span></a></h1>
 
     <nav>
         <a href="index.php">Home</a>
@@ -366,6 +371,7 @@ if ($restaurante) {
 
                 <form method="POST" action="painelrestaurante.php" class="form-admin">
                     <input type="hidden" name="acao" value="adicionar_produto">
+                    <?= csrf_field() ?>
 
                     <label>Nome do produto</label>
                     <input 
@@ -428,68 +434,77 @@ if ($restaurante) {
 
                         <tbody>
                             <?php foreach ($produtos as $produto): ?>
+                                <?php
+                                    $produtoId = (int)$produto['id'];
+                                    $formAtualizarProduto = 'form-atualizar-produto-' . $produtoId;
+                                ?>
                                 <tr>
-                                    <form method="POST" action="painelrestaurante.php">
-                                        <input type="hidden" name="acao" value="atualizar_produto">
-                                        <input type="hidden" name="produto_id" value="<?= (int)$produto['id'] ?>">
+                                    <td>
+                                        <form id="<?= h($formAtualizarProduto) ?>" method="POST" action="painelrestaurante.php"></form>
+                                        <input form="<?= h($formAtualizarProduto) ?>" type="hidden" name="acao" value="atualizar_produto">
+                                        <input form="<?= h($formAtualizarProduto) ?>" type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                                        <input form="<?= h($formAtualizarProduto) ?>" type="hidden" name="produto_id" value="<?= $produtoId ?>">
 
-                                        <td>
+                                        <input 
+                                            form="<?= h($formAtualizarProduto) ?>"
+                                            type="text" 
+                                            name="nome_produto" 
+                                            value="<?= h($produto['nome']) ?>" 
+                                            required
+                                        >
+                                    </td>
+
+                                    <td>
+                                        <input 
+                                            form="<?= h($formAtualizarProduto) ?>"
+                                            type="text" 
+                                            name="descricao_produto" 
+                                            value="<?= h($produto['descricao'] ?? '') ?>"
+                                        >
+                                    </td>
+
+                                    <td>
+                                        <input 
+                                            form="<?= h($formAtualizarProduto) ?>"
+                                            type="text" 
+                                            name="preco_produto" 
+                                            value="<?= number_format((float)$produto['preco'], 2, '.', '') ?>" 
+                                            required
+                                        >
+                                    </td>
+
+                                    <td>
+                                        <label class="checkbox-linha">
                                             <input 
-                                                type="text" 
-                                                name="nome_produto" 
-                                                value="<?= h($produto['nome']) ?>" 
-                                                required
+                                                form="<?= h($formAtualizarProduto) ?>"
+                                                type="checkbox" 
+                                                name="disponivel_produto" 
+                                                value="1"
+                                                <?= (int)$produto['disponivel'] === 1 ? 'checked' : '' ?>
                                             >
-                                        </td>
+                                            Disponível
+                                        </label>
+                                    </td>
 
-                                        <td>
-                                            <input 
-                                                type="text" 
-                                                name="descricao_produto" 
-                                                value="<?= h($produto['descricao'] ?? '') ?>"
-                                            >
-                                        </td>
+                                    <td class="acoes">
+                                        <button form="<?= h($formAtualizarProduto) ?>" type="submit" class="btn-primary">
+                                            Guardar
+                                        </button>
 
-                                        <td>
-                                            <input 
-                                                type="text" 
-                                                name="preco_produto" 
-                                                value="<?= number_format((float)$produto['preco'], 2, '.', '') ?>" 
-                                                required
-                                            >
-                                        </td>
+                                        <form 
+                                            method="POST" 
+                                            action="painelrestaurante.php" 
+                                            onsubmit="return confirm('Tem a certeza que pretende remover este produto?');"
+                                        >
+                                            <input type="hidden" name="acao" value="remover_produto">
+                                            <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                                            <input type="hidden" name="produto_id" value="<?= $produtoId ?>">
 
-                                        <td>
-                                            <label class="checkbox-linha">
-                                                <input 
-                                                    type="checkbox" 
-                                                    name="disponivel_produto" 
-                                                    value="1"
-                                                    <?= (int)$produto['disponivel'] === 1 ? 'checked' : '' ?>
-                                                >
-                                                Disponível
-                                            </label>
-                                        </td>
-
-                                        <td class="acoes">
-                                            <button type="submit" class="btn-primary">
-                                                Guardar
+                                            <button type="submit" class="btn-danger">
+                                                Remover
                                             </button>
-                                    </form>
-
-                                            <form 
-                                                method="POST" 
-                                                action="painelrestaurante.php" 
-                                                onsubmit="return confirm('Tem a certeza que pretende remover este produto?');"
-                                            >
-                                                <input type="hidden" name="acao" value="remover_produto">
-                                                <input type="hidden" name="produto_id" value="<?= (int)$produto['id'] ?>">
-
-                                                <button type="submit" class="btn-danger">
-                                                    Remover
-                                                </button>
-                                            </form>
-                                        </td>
+                                        </form>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -567,6 +582,7 @@ if ($restaurante) {
                                     <td>
                                         <form method="POST" action="painelrestaurante.php">
                                             <input type="hidden" name="acao" value="atualizar_estado">
+                                            <?= csrf_field() ?>
                                             <input type="hidden" name="encomenda_id" value="<?= (int)$encomenda['id'] ?>">
 
                                             <select name="estado">
@@ -604,9 +620,31 @@ if ($restaurante) {
     </section>
 </main>
 
-<footer>
-    <p>© 2026 FoodToGo - Todos os direitos reservados.</p>
+<footer class="rodape-app">
+    <button
+        type="button"
+        class="rodape-info-toggle"
+        data-info-grupo
+        data-tooltip="Clique para ver as informações do grupo"
+        title="Clique para ver as informações do grupo"
+        aria-expanded="false"
+        aria-controls="info-projeto-grupo"
+    >
+        © 2026 FoodToGo - Todos os direitos reservados.
+    </button>
+
+    <div id="info-projeto-grupo" class="rodape-info" hidden>
+        <strong>Sobre o projeto</strong>
+        <p>FoodToGo é uma aplicação web de encomenda de alimentos que liga clientes e restaurantes numa plataforma simples e organizada.</p>
+        <strong>Grupo</strong>
+        <ul>
+            <li>1231707 - Erick de Abreu Gomes</li>
+            <li>1250756 - André Gonçalves Monteiro</li>
+            <li>1251415 - Rodrigo Luís Nunes Alves Ribeiro</li>
+        </ul>
+    </div>
 </footer>
 
+<script src="scripts/app.js"></script>
 </body>
 </html>

@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once __DIR__ . '/scripts/db.php';
 
 $isCliente = isset($_SESSION['user_id']) && ($_SESSION['tipo'] ?? '') === 'cliente';
@@ -20,6 +22,7 @@ $result = $db->query("
     FROM restaurantes r
     LEFT JOIN produtos p ON p.restaurante_id = r.id
     WHERE r.ativo = 1
+      AND r.utilizador_id IS NOT NULL
     ORDER BY r.nome ASC, p.nome ASC
 ");
 
@@ -68,7 +71,7 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
 <body class="pagina-restaurantes">
 
 <header>
-    <h1 class="logo">Food<span>ToGo</span></h1>
+    <h1 class="logo"><a href="index.php">Food<span>ToGo</span></a></h1>
 
     <nav>
         <a href="index.php">Home</a>
@@ -206,8 +209,29 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
     </section>
 </main>
 
-<footer>
-    <p>© 2026 FoodToGo - Todos os direitos reservados.</p>
+<footer class="rodape-app">
+    <button
+        type="button"
+        class="rodape-info-toggle"
+        data-info-grupo
+        data-tooltip="Clique para ver as informações do grupo"
+        title="Clique para ver as informações do grupo"
+        aria-expanded="false"
+        aria-controls="info-projeto-grupo"
+    >
+        © 2026 FoodToGo - Todos os direitos reservados.
+    </button>
+
+    <div id="info-projeto-grupo" class="rodape-info" hidden>
+        <strong>Sobre o projeto</strong>
+        <p>FoodToGo é uma aplicação web de encomenda de alimentos que liga clientes e restaurantes numa plataforma simples e organizada.</p>
+        <strong>Grupo</strong>
+        <ul>
+            <li>1231707 - Erick de Abreu Gomes</li>
+            <li>1250756 - André Gonçalves Monteiro</li>
+            <li>1251415 - Rodrigo Luís Nunes Alves Ribeiro</li>
+        </ul>
+    </div>
 </footer>
 
 <script src="scripts/app.js"></script>

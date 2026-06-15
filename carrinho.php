@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once __DIR__ . '/scripts/db.php';
 
 if (!function_exists('h')) {
@@ -8,10 +10,7 @@ if (!function_exists('h')) {
     }
 }
 
-if (!isset($_SESSION['user_id']) || ($_SESSION['tipo'] ?? '') !== 'cliente') {
-    header('Location: login.html');
-    exit;
-}
+require_login('cliente');
 
 $userId = (int)$_SESSION['user_id'];
 $mensagem = '';
@@ -28,7 +27,7 @@ $restaurante = null;
 
 if (!$modoConsultaHistorico) {
     $stmt = $db->prepare("
-        SELECT id, nome, categoria, morada, ativo
+        SELECT id, nome, categoria, morada, ativo, utilizador_id
         FROM restaurantes
         WHERE id = :id
     ");
@@ -41,6 +40,8 @@ if (!$modoConsultaHistorico) {
         $erro = 'Restaurante não encontrado. Volte à página de restaurantes e escolha uma opção válida.';
     } elseif ((int)$restaurante['ativo'] !== 1) {
         $erro = 'Este restaurante não está ativo de momento.';
+    } elseif (empty($restaurante['utilizador_id'])) {
+        $erro = 'Este restaurante ainda não está disponível para receber encomendas.';
     }
 }
 
@@ -76,6 +77,10 @@ if (
     $restaurante &&
     $erro === ''
 ) {
+    if (!csrf_validate($_POST['csrf_token'] ?? '')) {
+        $erro = 'Pedido inválido. Atualize a página e tente novamente.';
+    }
+
     $quantidadesRecebidas = $_POST['quantidade'] ?? [];
     $moradaEntrega = trim($_POST['morada_entrega'] ?? '');
     $contactoCliente = trim($_POST['contacto_cliente'] ?? '');
@@ -138,74 +143,91 @@ if (
         Isto impede encomendas acima do limite mesmo que o JavaScript falhe.
     */
     if ($erro === '') {
-        $data = date('Y-m-d H:i:s');
+        $transacaoAberta = false;
 
-        $stmt = $db->prepare("
-            INSERT INTO encomendas (
-                utilizador_id,
-                restaurante_id,
-                data,
-                estado,
-                total,
-                morada_entrega,
-                contacto_cliente,
-                observacoes
-            )
-            VALUES (
-                :utilizador_id,
-                :restaurante_id,
-                :data,
-                'recebida',
-                :total,
-                :morada_entrega,
-                :contacto_cliente,
-                :observacoes
-            )
-        ");
+        try {
+            $db->exec('BEGIN');
+            $transacaoAberta = true;
 
-        $stmt->bindValue(':utilizador_id', $userId, SQLITE3_INTEGER);
-        $stmt->bindValue(':restaurante_id', $restauranteId, SQLITE3_INTEGER);
-        $stmt->bindValue(':data', $data, SQLITE3_TEXT);
-        $stmt->bindValue(':total', $total, SQLITE3_FLOAT);
-        $stmt->bindValue(':morada_entrega', $moradaEntrega, SQLITE3_TEXT);
-        $stmt->bindValue(':contacto_cliente', $contactoCliente, SQLITE3_TEXT);
-        $stmt->bindValue(':observacoes', $observacoes, SQLITE3_TEXT);
-        $stmt->execute();
+            $data = date('Y-m-d H:i:s');
 
-        $encomendaId = $db->lastInsertRowID();
-
-        foreach ($itensSelecionados as $item) {
             $stmt = $db->prepare("
-                INSERT INTO encomenda_itens (
-                    encomenda_id,
-                    produto_id,
-                    quantidade,
-                    preco_unitario
+                INSERT INTO encomendas (
+                    utilizador_id,
+                    restaurante_id,
+                    data,
+                    estado,
+                    total,
+                    morada_entrega,
+                    contacto_cliente,
+                    observacoes
                 )
                 VALUES (
-                    :encomenda_id,
-                    :produto_id,
-                    :quantidade,
-                    :preco_unitario
+                    :utilizador_id,
+                    :restaurante_id,
+                    :data,
+                    'recebida',
+                    :total,
+                    :morada_entrega,
+                    :contacto_cliente,
+                    :observacoes
                 )
             ");
 
-            $stmt->bindValue(':encomenda_id', $encomendaId, SQLITE3_INTEGER);
-            $stmt->bindValue(':produto_id', $item['produto_id'], SQLITE3_INTEGER);
-            $stmt->bindValue(':quantidade', $item['quantidade'], SQLITE3_INTEGER);
-            $stmt->bindValue(':preco_unitario', $item['preco_unitario'], SQLITE3_FLOAT);
+            $stmt->bindValue(':utilizador_id', $userId, SQLITE3_INTEGER);
+            $stmt->bindValue(':restaurante_id', $restauranteId, SQLITE3_INTEGER);
+            $stmt->bindValue(':data', $data, SQLITE3_TEXT);
+            $stmt->bindValue(':total', $total, SQLITE3_FLOAT);
+            $stmt->bindValue(':morada_entrega', $moradaEntrega, SQLITE3_TEXT);
+            $stmt->bindValue(':contacto_cliente', $contactoCliente, SQLITE3_TEXT);
+            $stmt->bindValue(':observacoes', $observacoes, SQLITE3_TEXT);
             $stmt->execute();
+
+            $encomendaId = $db->lastInsertRowID();
+
+            foreach ($itensSelecionados as $item) {
+                $stmt = $db->prepare("
+                    INSERT INTO encomenda_itens (
+                        encomenda_id,
+                        produto_id,
+                        quantidade,
+                        preco_unitario
+                    )
+                    VALUES (
+                        :encomenda_id,
+                        :produto_id,
+                        :quantidade,
+                        :preco_unitario
+                    )
+                ");
+
+                $stmt->bindValue(':encomenda_id', $encomendaId, SQLITE3_INTEGER);
+                $stmt->bindValue(':produto_id', $item['produto_id'], SQLITE3_INTEGER);
+                $stmt->bindValue(':quantidade', $item['quantidade'], SQLITE3_INTEGER);
+                $stmt->bindValue(':preco_unitario', $item['preco_unitario'], SQLITE3_FLOAT);
+                $stmt->execute();
+            }
+
+            $db->exec('COMMIT');
+            $transacaoAberta = false;
+
+            $mensagem = 'Encomenda confirmada com sucesso.';
+
+            /*
+                Depois de confirmar, não faz sentido manter o formulário ativo.
+                A página passa a mostrar apenas histórico e botão para nova encomenda.
+            */
+            $modoConsultaHistorico = true;
+            $restaurante = null;
+            $produtos = [];
+        } catch (Throwable $e) {
+            if ($transacaoAberta) {
+                $db->exec('ROLLBACK');
+            }
+
+            error_log('Erro ao gravar encomenda: ' . $e->getMessage());
+            $erro = 'Não foi possível confirmar a encomenda. Tente novamente.';
         }
-
-        $mensagem = 'Encomenda confirmada com sucesso.';
-
-        /*
-            Depois de confirmar, não faz sentido manter o formulário ativo.
-            A página passa a mostrar apenas histórico e botão para nova encomenda.
-        */
-        $modoConsultaHistorico = true;
-        $restaurante = null;
-        $produtos = [];
     }
 }
 
@@ -252,7 +274,7 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
 <body class="pagina-carrinho">
 
 <header>
-    <h1 class="logo">Food<span>ToGo</span></h1>
+    <h1 class="logo"><a href="index.php">Food<span>ToGo</span></a></h1>
 
     <nav>
         <a href="index.php">Home</a>
@@ -296,8 +318,14 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
         <?php endif; ?>
 
         <?php if (!$modoConsultaHistorico && $erro === '' && $restaurante): ?>
-            <form method="POST" action="carrinho.php?restaurante_id=<?= (int)$restauranteId ?>" id="form-carrinho">
+            <form
+                method="POST"
+                action="carrinho.php?restaurante_id=<?= (int)$restauranteId ?>"
+                id="form-carrinho"
+                data-limite-total="<?= (int)$limiteTotalPedido ?>"
+            >
                 <input type="hidden" name="acao" value="confirmar">
+                <?= csrf_field() ?>
 
                 <div class="layout-carrinho">
 
@@ -511,160 +539,33 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
     </section>
 </main>
 
-<footer>
-    <p>© 2026 FoodToGo - Todos os direitos reservados.</p>
+<footer class="rodape-app">
+    <button
+        type="button"
+        class="rodape-info-toggle"
+        data-info-grupo
+        data-tooltip="Clique para ver as informações do grupo"
+        title="Clique para ver as informações do grupo"
+        aria-expanded="false"
+        aria-controls="info-projeto-grupo"
+    >
+        © 2026 FoodToGo - Todos os direitos reservados.
+    </button>
+
+    <div id="info-projeto-grupo" class="rodape-info" hidden>
+        <strong>Sobre o projeto</strong>
+        <p>FoodToGo é uma aplicação web de encomenda de alimentos que liga clientes e restaurantes numa plataforma simples e organizada.</p>
+        <strong>Grupo</strong>
+        <ul>
+            <li>1231707 - Erick de Abreu Gomes</li>
+            <li>1250756 - André Gonçalves Monteiro</li>
+            <li>1251415 - Rodrigo Luís Nunes Alves Ribeiro</li>
+        </ul>
+    </div>
 </footer>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("form-carrinho");
-
-    if (!form) {
-        return;
-    }
-
-    const contactoInput = document.getElementById("contacto_cliente");
-
-    if (contactoInput) {
-        contactoInput.addEventListener("input", function () {
-            contactoInput.value = contactoInput.value
-                .replace(/\D/g, "")
-                .slice(0, 9);
-        });
-    }
-
-    const linhas = form.querySelectorAll("tbody tr");
-    const totalCarrinho = document.getElementById("total-carrinho");
-    const limiteTotalPedido = <?= (int)$limiteTotalPedido ?>;
-
-    function formatarEuro(valor) {
-        return valor.toFixed(2).replace(".", ",") + " €";
-    }
-
-    function calcularTotalQuantidade() {
-        let totalQuantidade = 0;
-
-        form.querySelectorAll("[data-quantidade]").forEach(function (input) {
-            const quantidade = parseInt(input.value || "0", 10);
-
-            if (!isNaN(quantidade)) {
-                totalQuantidade += quantidade;
-            }
-        });
-
-        return totalQuantidade;
-    }
-
-    function atualizarTotais() {
-        let total = 0;
-
-        linhas.forEach(function (linha) {
-            const input = linha.querySelector("[data-quantidade]");
-            const subtotalElemento = linha.querySelector("[data-subtotal]");
-
-            const preco = parseFloat(input.dataset.preco || "0");
-            const quantidade = parseInt(input.value || "0", 10);
-
-            const subtotal = preco * quantidade;
-            total += subtotal;
-
-            subtotalElemento.textContent = formatarEuro(subtotal);
-        });
-
-        totalCarrinho.textContent = formatarEuro(total);
-    }
-
-    linhas.forEach(function (linha) {
-        const input = linha.querySelector("[data-quantidade]");
-        const btnMais = linha.querySelector("[data-mais]");
-        const btnMenos = linha.querySelector("[data-menos]");
-
-        btnMais.addEventListener("click", function () {
-            const maximoProduto = parseInt(input.getAttribute("max") || "10", 10);
-            const valorAtual = parseInt(input.value || "0", 10);
-            const totalAtual = calcularTotalQuantidade();
-
-            if (valorAtual >= maximoProduto) {
-                alert("Limite máximo por produto atingido.");
-                return;
-            }
-
-            if (totalAtual >= limiteTotalPedido) {
-                alert("Cada encomenda pode ter no máximo " + limiteTotalPedido + " unidades no total.");
-                return;
-            }
-
-            input.value = valorAtual + 1;
-            atualizarTotais();
-        });
-
-        btnMenos.addEventListener("click", function () {
-            const valorAtual = parseInt(input.value || "0", 10);
-
-            if (valorAtual > 0) {
-                input.value = valorAtual - 1;
-            }
-
-            atualizarTotais();
-        });
-
-        input.addEventListener("input", function () {
-            const maximoProduto = parseInt(input.getAttribute("max") || "10", 10);
-            let valor = parseInt(input.value || "0", 10);
-
-            if (valor < 0 || isNaN(valor)) {
-                valor = 0;
-            }
-
-            if (valor > maximoProduto) {
-                valor = maximoProduto;
-                alert("Limite máximo por produto atingido.");
-            }
-
-            input.value = valor;
-
-            let totalQuantidade = calcularTotalQuantidade();
-
-            if (totalQuantidade > limiteTotalPedido) {
-                const excesso = totalQuantidade - limiteTotalPedido;
-                const novoValor = Math.max(0, valor - excesso);
-
-                input.value = novoValor;
-
-                alert("Cada encomenda pode ter no máximo " + limiteTotalPedido + " unidades no total.");
-            }
-
-            atualizarTotais();
-        });
-    });
-
-    form.addEventListener("submit", function (event) {
-        const contacto = document.getElementById("contacto_cliente").value.trim();
-
-        if (!/^9[0-9]{8}$/.test(contacto)) {
-            event.preventDefault();
-            alert("O telemóvel deve ter exatamente 9 dígitos e começar por 9.");
-            return;
-        }
-
-        const totalQuantidade = calcularTotalQuantidade();
-
-        if (totalQuantidade <= 0) {
-            event.preventDefault();
-            alert("Selecione pelo menos um produto antes de confirmar a encomenda.");
-            return;
-        }
-
-        if (totalQuantidade > limiteTotalPedido) {
-            event.preventDefault();
-            alert("Cada encomenda pode ter no máximo " + limiteTotalPedido + " unidades no total. Selecionou " + totalQuantidade + " unidades.");
-            return;
-        }
-    });
-
-    atualizarTotais();
-});
-</script>
+<script src="scripts/app.js"></script>
+<script src="scripts/carrinho.js"></script>
 
 </body>
 </html>

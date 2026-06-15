@@ -1,12 +1,19 @@
 <?php
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    echo 'Script de manutenção disponível apenas por linha de comandos.';
+    exit;
+}
+
 require_once 'db.php';
 
 /*
     FoodToGo - criar_bd.php
     Cria/atualiza a base de dados SQLite da aplicação.
 
-    Pode ser executado várias vezes.
-    Se a base já existir, tenta acrescentar colunas novas sem apagar dados.
+    O seed inicial configura apenas o administrador.
+    Clientes podem ser criados pelo registo.
+    Restaurantes devem ser criados e associados pelo painel de administração.
 */
 
 $db->exec("PRAGMA foreign_keys = ON");
@@ -80,11 +87,7 @@ $db->exec("
     )
 ");
 
-/*
-    Se a tabela encomendas já existia antes, o CREATE TABLE IF NOT EXISTS
-    não altera a estrutura. Por isso verificamos e adicionamos colunas em falta.
-*/
-
+/* Colunas acrescentadas para bases criadas em versões anteriores. */
 $colunasEncomendas = [];
 $result = $db->query("PRAGMA table_info(encomendas)");
 
@@ -208,186 +211,17 @@ function criarOuAtualizarUtilizador($db, $nome, $username, $email, $password, $t
     return (int)$db->lastInsertRowID();
 }
 
-function criarProdutoSeNaoExiste($db, $restauranteId, $nome, $descricao, $preco) {
-    $stmt = $db->prepare("
-        SELECT id
-        FROM produtos
-        WHERE restaurante_id = :restaurante_id
-          AND nome = :nome
-        LIMIT 1
-    ");
-
-    $stmt->bindValue(':restaurante_id', $restauranteId, SQLITE3_INTEGER);
-    $stmt->bindValue(':nome', $nome, SQLITE3_TEXT);
-
-    $result = $stmt->execute();
-    $produto = $result->fetchArray(SQLITE3_ASSOC);
-
-    if ($produto) {
-        $stmt = $db->prepare("
-            UPDATE produtos
-            SET descricao = :descricao,
-                preco = :preco,
-                disponivel = 1
-            WHERE id = :id
-        ");
-
-        $stmt->bindValue(':descricao', $descricao, SQLITE3_TEXT);
-        $stmt->bindValue(':preco', (float)$preco, SQLITE3_FLOAT);
-        $stmt->bindValue(':id', (int)$produto['id'], SQLITE3_INTEGER);
-        $stmt->execute();
-
-        return;
-    }
-
-    $stmt = $db->prepare("
-        INSERT INTO produtos (
-            restaurante_id,
-            nome,
-            descricao,
-            preco,
-            disponivel
-        )
-        VALUES (
-            :restaurante_id,
-            :nome,
-            :descricao,
-            :preco,
-            1
-        )
-    ");
-
-    $stmt->bindValue(':restaurante_id', $restauranteId, SQLITE3_INTEGER);
-    $stmt->bindValue(':nome', $nome, SQLITE3_TEXT);
-    $stmt->bindValue(':descricao', $descricao, SQLITE3_TEXT);
-    $stmt->bindValue(':preco', (float)$preco, SQLITE3_FLOAT);
-    $stmt->execute();
-}
-
 /* =========================
-   UTILIZADORES DE TESTE
+   UTILIZADOR INICIAL
 ========================= */
 
-$adminId = criarOuAtualizarUtilizador(
+criarOuAtualizarUtilizador(
     $db,
     'Administrador',
     'admin',
     'admin@foodtogo.pt',
     'admin123',
     'admin'
-);
-
-$restauranteUserId = criarOuAtualizarUtilizador(
-    $db,
-    'Restaurante Teste',
-    'restaurante',
-    'restaurante@foodtogo.pt',
-    'rest123',
-    'restaurante'
-);
-
-$clienteId = criarOuAtualizarUtilizador(
-    $db,
-    'Cliente Teste',
-    'cliente',
-    'cliente@foodtogo.pt',
-    'cliente123',
-    'cliente'
-);
-
-/* =========================
-   RESTAURANTE DE TESTE
-========================= */
-
-$stmt = $db->prepare("
-    SELECT id
-    FROM restaurantes
-    WHERE utilizador_id = :utilizador_id
-    LIMIT 1
-");
-
-$stmt->bindValue(':utilizador_id', $restauranteUserId, SQLITE3_INTEGER);
-$result = $stmt->execute();
-$restauranteTeste = $result->fetchArray(SQLITE3_ASSOC);
-
-if ($restauranteTeste) {
-    $restauranteId = (int)$restauranteTeste['id'];
-
-    $stmt = $db->prepare("
-        UPDATE restaurantes
-        SET nome = :nome,
-            categoria = :categoria,
-            morada = :morada,
-            ativo = 1
-        WHERE id = :id
-    ");
-
-    $stmt->bindValue(':nome', 'Sabor Caseiro', SQLITE3_TEXT);
-    $stmt->bindValue(':categoria', 'Comida portuguesa', SQLITE3_TEXT);
-    $stmt->bindValue(':morada', 'Rua Teste 123, Porto', SQLITE3_TEXT);
-    $stmt->bindValue(':id', $restauranteId, SQLITE3_INTEGER);
-    $stmt->execute();
-} else {
-    $stmt = $db->prepare("
-        INSERT INTO restaurantes (
-            utilizador_id,
-            nome,
-            categoria,
-            morada,
-            ativo
-        )
-        VALUES (
-            :utilizador_id,
-            :nome,
-            :categoria,
-            :morada,
-            1
-        )
-    ");
-
-    $stmt->bindValue(':utilizador_id', $restauranteUserId, SQLITE3_INTEGER);
-    $stmt->bindValue(':nome', 'Sabor Caseiro', SQLITE3_TEXT);
-    $stmt->bindValue(':categoria', 'Comida portuguesa', SQLITE3_TEXT);
-    $stmt->bindValue(':morada', 'Rua Teste 123, Porto', SQLITE3_TEXT);
-    $stmt->execute();
-
-    $restauranteId = (int)$db->lastInsertRowID();
-}
-
-/* =========================
-   PRODUTOS DE TESTE
-========================= */
-
-criarProdutoSeNaoExiste(
-    $db,
-    $restauranteId,
-    'Frango grelhado com arroz',
-    'Menu com arroz, salada e bebida incluída.',
-    9.50
-);
-
-criarProdutoSeNaoExiste(
-    $db,
-    $restauranteId,
-    'Bitoque à casa',
-    'Bife com ovo, batata frita, arroz e bebida.',
-    10.90
-);
-
-criarProdutoSeNaoExiste(
-    $db,
-    $restauranteId,
-    'Lasanha caseira',
-    'Lasanha de carne com salada e bebida.',
-    8.75
-);
-
-criarProdutoSeNaoExiste(
-    $db,
-    $restauranteId,
-    'Hambúrguer de Vaca + Sumo Compal 300ml + Sorvete Baunilha',
-    'Combo completo.',
-    19.50
 );
 
 /* =========================
@@ -412,7 +246,7 @@ criarProdutoSeNaoExiste(
                 Base de dados criada/atualizada com sucesso.
             </div>
 
-            <h2>Utilizadores de teste</h2>
+            <h2>Utilizador inicial</h2>
 
             <table class="tabela-restaurantes">
                 <thead>
@@ -429,24 +263,12 @@ criarProdutoSeNaoExiste(
                         <td>admin</td>
                         <td>admin123</td>
                     </tr>
-
-                    <tr>
-                        <td>Restaurante</td>
-                        <td>restaurante</td>
-                        <td>rest123</td>
-                    </tr>
-
-                    <tr>
-                        <td>Cliente</td>
-                        <td>cliente</td>
-                        <td>cliente123</td>
-                    </tr>
                 </tbody>
             </table>
 
             <p>
-                Restaurante de teste associado ao utilizador <strong>restaurante</strong>:
-                <strong>Sabor Caseiro</strong>.
+                A base fica apenas com o administrador inicial.
+                Clientes podem ser criados pelo registo e associados a restaurantes pelo painel de administração.
             </p>
 
             <p>

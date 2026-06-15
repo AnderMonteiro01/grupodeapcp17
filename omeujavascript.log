@@ -1,0 +1,71 @@
+384951f (HEAD -> main, origin/main, origin/HEAD) Atualiza README com regras finais da aplicação
+53f3ec1 alterei o login.html, alterei o design (retirei texto desnecessário)
+1cafbb9 Alterado código junto com os colegas para o paineladmin e painel restaurante
+e5d01c7 Alterado styles para corresponder ao app.js e corrigido código app.js
+c7f30e6 Update do estilo do logótipo em todas as páginas
+f81cd7f Corrigido estrutura base e encomendas
+0c0133a (origin/teste-w2-php-sqlite, teste-w2-php-sqlite) Base funcional do W2 com carrinho e encomendas
+31698de Adicionado pastas de scripts images e outros
+dd3b45b Guarda versão de teste com user stories
+95778ec Alterado pasta scripts
+8b0043f alterei o painel admin
+734641f alterei o design do painel admin
+c5e2bfb adicionei gerir rest e util
+8c9e9db Alterado o script para funcionar com a base de dados
+10caafb criei os scripts para o painel administrador e atualizei o paineladmin.html
+2295582 Alterado Login agora funcional
+517c548 Alterado Login.html e criado script novoregisto.php
+7637620 Alterado arquivo criar_db
+6575a00 Alterado arquivo criar_bd
+1cf7ef2 Commit ao arquivo completo
+5b5c92e Trocado lugar da imagem do tabela user storys
+a3515bd Add files via upload
+91217d3 Adiciona estrutura inicial PHP e SQLite
+bcb28d3 Removido Word da pasta do projeto
+edb7669 Removido ficheiros antigos errados
+806f878 alterado css painelrestaurante
+d2b0638 Acrescentado styles para alguns e alterado codigo
+d5b8661 Alterado codigo para funcionar css nos arquivos
+3600211 Alterado styles.css
+acbc50f Atualizaçoes pequenas
+8c203f8 Trocado codigo restaurantes.html (restaurado)
+434132b adicionado imagem correta
+470deea Alterado styles do restaurante
+fb56311 mudado nome admin para paineladmin.html
+5004469 Alterado restaurantes
+f477d85 criei o admin.html
+90283a4 Merge branch 'main' of https://github.com/AnderMonteiro01/grupodeapcp17
+2fb66f4 Adicionada a imagem principal do site
+0e1e557 acrescentei para o painel restaurante o css
+cc4046f atualizaçao index
+8b2f6b0 Alterado apenas o nome do ficheiro painel para painelrestaurante
+02e3124 adicionei o painel.html
+abf2f10 Atualizado estilos e restaurantes
+e5c0332 atualizei o styles.css
+5cd679b atualizada erro index
+cc45ed8 Homepage atualizada
+5ec4471 Atualizado código restaurantes carrinho e acrescentado styles
+453c2ec Atualizei o login.html
+4590d11 atualizei o login.html
+869b602 Merge branch 'main' of https://github.com/AnderMonteiro01/grupodeapcp17
+ed5090f atualizaçao do index e adicionado o css da homepage
+1b0320e Atualizado carrinho.html e restaurantes.html
+71a3917 Adicionado carrinho.html (ficheiro vazio) e restaurantes.html atualizado
+2080893 Adicionei login.html e atualizei o styles.css
+abfb3b6 Adicionado Restaurantes.html
+3dd735a Acrescentado pasta styles e restaurantes.html
+2b4fc03 Atualização de ficheiros
+d4c2f1d Criado pastas Images Scripts e Styles
+0ac4ef0 Html para homepage
+672f5f9 Criação da Home Page (index.html)
+54ed239 Adicionado documento Projecto.docx atualizado
+d1268fb Alteração e acréscimo de informações relativamente a User Stories e modo geral de funcionamento do Readme
+286cb38 Adicionado imagem referente aos Wireframes do Projeto
+fd22d93 Adicionei as user stories
+dce637a Alterado README.md com informações básicas sobre a aplicação (Tema, Descrição da aplicação, Atores
+0495d0f Alteração resetada para o README.md original
+4c0e968 adicionado elemento 1251415
+503ca70 adicionei o elemento 1250756
+d2da9d9 Adiciona elemento rodrigo-55533
+1279dce Adicionado arquivo grupo.txt com identificação do aluno 1231707 assim como o tema do trabalho
+b14f5b3 Initial commit

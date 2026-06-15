@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once __DIR__ . '/scripts/db.php';
 
 if (!function_exists('h')) {
@@ -8,10 +10,7 @@ if (!function_exists('h')) {
     }
 }
 
-if (!isset($_SESSION['user_id']) || ($_SESSION['tipo'] ?? '') !== 'admin') {
-    header('Location: login.html');
-    exit;
-}
+require_login('admin');
 
 $mensagem = '';
 $erro = '';
@@ -81,10 +80,51 @@ function validarUtilizadorParaRestaurante($db, $utilizadorId, $restauranteAtualI
     }
 }
 
+function utilizadorAtualDoRestaurante($db, $restauranteId) {
+    $stmt = $db->prepare("
+        SELECT utilizador_id
+        FROM restaurantes
+        WHERE id = :id
+        LIMIT 1
+    ");
+
+    $stmt->bindValue(':id', $restauranteId, SQLITE3_INTEGER);
+    $result = $stmt->execute();
+    $restaurante = $result->fetchArray(SQLITE3_ASSOC);
+
+    return $restaurante && $restaurante['utilizador_id'] !== null
+        ? (int)$restaurante['utilizador_id']
+        : 0;
+}
+
+function reporTipoClienteSeSemRestaurante($db, $utilizadorId) {
+    if ($utilizadorId <= 0) {
+        return;
+    }
+
+    if (utilizadorAssociadoARestaurante($db, $utilizadorId)) {
+        return;
+    }
+
+    $stmt = $db->prepare("
+        UPDATE utilizadores
+        SET tipo = 'cliente'
+        WHERE id = :id
+          AND tipo = 'restaurante'
+    ");
+
+    $stmt->bindValue(':id', $utilizadorId, SQLITE3_INTEGER);
+    $stmt->execute();
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $acao = $_POST['acao'] ?? '';
 
     try {
+        if (!csrf_validate($_POST['csrf_token'] ?? '')) {
+            throw new Exception('Pedido inválido. Atualize a página e tente novamente.');
+        }
+
         if ($acao === 'atualizar_utilizador') {
             $id = (int)($_POST['id'] ?? 0);
             $nome = trim($_POST['nome'] ?? '');
@@ -168,11 +208,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Não pode remover a sua própria conta de administrador.');
             }
 
-            $temEncomendas = (int)$db->querySingle("
+            $stmt = $db->prepare("
                 SELECT COUNT(*)
                 FROM encomendas
-                WHERE utilizador_id = $id
+                WHERE utilizador_id = :id
             ");
+            $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+            $result = $stmt->execute();
+            $temEncomendas = (int)$result->fetchArray(SQLITE3_NUM)[0];
 
             if ($temEncomendas > 0) {
                 throw new Exception('Este utilizador tem encomendas associadas e não pode ser removido para não quebrar o histórico.');
@@ -213,6 +256,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (!in_array($ativo, [0, 1], true)) {
                 $ativo = 1;
+            }
+
+            if ($ativo === 1 && $utilizadorId <= 0) {
+                throw new Exception('Para ficar ativo, o restaurante precisa de um utilizador associado.');
             }
 
             validarUtilizadorParaRestaurante($db, $utilizadorId, 0);
@@ -285,7 +332,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ativo = 1;
             }
 
+            if ($ativo === 1 && $utilizadorId <= 0) {
+                throw new Exception('Para ficar ativo, o restaurante precisa de um utilizador associado.');
+            }
+
             validarUtilizadorParaRestaurante($db, $utilizadorId, $id);
+            $utilizadorAnteriorId = utilizadorAtualDoRestaurante($db, $id);
 
             $stmt = $db->prepare("
                 UPDATE restaurantes
@@ -322,6 +374,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute();
             }
 
+            if ($utilizadorAnteriorId > 0 && $utilizadorAnteriorId !== $utilizadorId) {
+                reporTipoClienteSeSemRestaurante($db, $utilizadorAnteriorId);
+            }
+
             $mensagem = 'Restaurante atualizado com sucesso.';
         }
 
@@ -332,11 +388,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Restaurante inválido.');
             }
 
-            $temEncomendas = (int)$db->querySingle("
+            $utilizadorAnteriorId = utilizadorAtualDoRestaurante($db, $id);
+
+            $stmt = $db->prepare("
                 SELECT COUNT(*)
                 FROM encomendas
-                WHERE restaurante_id = $id
+                WHERE restaurante_id = :id
             ");
+            $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+            $result = $stmt->execute();
+            $temEncomendas = (int)$result->fetchArray(SQLITE3_NUM)[0];
 
             if ($temEncomendas > 0) {
                 $stmt = $db->prepare("
@@ -366,12 +427,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
                 $stmt->execute();
 
+                reporTipoClienteSeSemRestaurante($db, $utilizadorAnteriorId);
+
                 $mensagem = 'Restaurante removido com sucesso.';
             }
         }
 
     } catch (Throwable $e) {
-        $erro = 'Erro: ' . $e->getMessage();
+        $mensagemErro = $e->getMessage();
+
+        if (stripos($mensagemErro, 'sqlite') !== false || stripos($mensagemErro, 'database') !== false) {
+            error_log('Erro no painel admin: ' . $mensagemErro);
+            $erro = 'Erro ao processar o pedido. Tente novamente.';
+        } else {
+            $erro = 'Erro: ' . $mensagemErro;
+        }
     }
 }
 
@@ -485,7 +555,7 @@ function optionsUtilizadoresRestaurante($utilizadoresParaAssociar, $utilizadorAt
 <body class="pagina-painel">
 
 <header>
-    <h1 class="logo">Food<span>ToGo</span></h1>
+    <h1 class="logo"><a href="index.php">Food<span>ToGo</span></a></h1>
 
     <nav>
         <a href="index.php">Home</a>
@@ -561,86 +631,91 @@ function optionsUtilizadoresRestaurante($utilizadoresParaAssociar, $utilizadorAt
 
                 <tbody>
                     <?php while ($u = $utilizadores->fetchArray(SQLITE3_ASSOC)): ?>
+                        <?php
+                            $utilizadorId = (int)$u['id'];
+                            $formUtilizador = 'form-utilizador-' . $utilizadorId;
+                        ?>
                         <tr>
-                            <form method="POST">
-                                <td>
-                                    <?= (int)$u['id'] ?>
-                                    <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
-                                </td>
+                            <td>
+                                <form id="<?= h($formUtilizador) ?>" method="POST"></form>
+                                <?= $utilizadorId ?>
+                                <input form="<?= h($formUtilizador) ?>" type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                                <input form="<?= h($formUtilizador) ?>" type="hidden" name="id" value="<?= $utilizadorId ?>">
+                            </td>
 
-                                <td>
-                                    <input name="nome" value="<?= h($u['nome']) ?>" required>
-                                </td>
+                            <td>
+                                <input form="<?= h($formUtilizador) ?>" name="nome" value="<?= h($u['nome']) ?>" required>
+                            </td>
 
-                                <td>
-                                    <input name="username" value="<?= h($u['username']) ?>" required>
-                                </td>
+                            <td>
+                                <input form="<?= h($formUtilizador) ?>" name="username" value="<?= h($u['username']) ?>" required>
+                            </td>
 
-                                <td>
-                                    <input type="email" name="email" value="<?= h($u['email']) ?>" required>
-                                </td>
+                            <td>
+                                <input form="<?= h($formUtilizador) ?>" type="email" name="email" value="<?= h($u['email']) ?>" required>
+                            </td>
 
-                                <td>
-                                    <select name="tipo">
-                                        <?php if ($u['restaurante_associado_id']): ?>
-
-                                            <option value="restaurante" selected>
-                                                Restaurante
-                                            </option>
-
-                                        <?php else: ?>
-
-                                            <option value="cliente" <?= $u['tipo'] === 'cliente' ? 'selected' : '' ?>>
-                                                Cliente
-                                            </option>
-
-                                            <option value="admin" <?= $u['tipo'] === 'admin' ? 'selected' : '' ?>>
-                                                Admin
-                                            </option>
-
-                                        <?php endif; ?>
-                                    </select>
-
+                            <td>
+                                <select form="<?= h($formUtilizador) ?>" name="tipo">
                                     <?php if ($u['restaurante_associado_id']): ?>
-                                        <br>
-                                        <span class="small">
-                                            Tipo bloqueado por associação.
-                                        </span>
+
+                                        <option value="restaurante" selected>
+                                            Restaurante
+                                        </option>
+
                                     <?php else: ?>
-                                        <br>
-                                        <span class="small">
-                                            Para tornar restaurante, associe na aba Restaurantes.
-                                        </span>
+
+                                        <option value="cliente" <?= $u['tipo'] === 'cliente' ? 'selected' : '' ?>>
+                                            Cliente
+                                        </option>
+
+                                        <option value="admin" <?= $u['tipo'] === 'admin' ? 'selected' : '' ?>>
+                                            Admin
+                                        </option>
+
                                     <?php endif; ?>
-                                </td>
+                                </select>
 
-                                <td>
-                                    <?php if ($u['restaurante_associado_nome']): ?>
-                                        <?= h($u['restaurante_associado_nome']) ?>
-                                    <?php else: ?>
-                                        <span class="small">Sem restaurante</span>
-                                    <?php endif; ?>
-                                </td>
+                                <?php if ($u['restaurante_associado_id']): ?>
+                                    <br>
+                                    <span class="small">
+                                        Tipo bloqueado por associação.
+                                    </span>
+                                <?php else: ?>
+                                    <br>
+                                    <span class="small">
+                                        Para tornar restaurante, associe na aba Restaurantes.
+                                    </span>
+                                <?php endif; ?>
+                            </td>
 
-                                <td>
-                                    <?= h($u['ultimo_acesso'] ?? 'Sem registo') ?>
-                                </td>
+                            <td>
+                                <?php if ($u['restaurante_associado_nome']): ?>
+                                    <?= h($u['restaurante_associado_nome']) ?>
+                                <?php else: ?>
+                                    <span class="small">Sem restaurante</span>
+                                <?php endif; ?>
+                            </td>
 
-                                <td class="acoes">
-                                    <button class="btn-primary" name="acao" value="atualizar_utilizador">
-                                        Guardar
-                                    </button>
+                            <td>
+                                <?= h($u['ultimo_acesso'] ?? 'Sem registo') ?>
+                            </td>
 
-                                    <button 
-                                        class="btn-secondary" 
-                                        name="acao" 
-                                        value="remover_utilizador"
-                                        onclick="return confirm('Remover utilizador?')"
-                                    >
-                                        Remover
-                                    </button>
-                                </td>
-                            </form>
+                            <td class="acoes">
+                                <button form="<?= h($formUtilizador) ?>" class="btn-primary" name="acao" value="atualizar_utilizador">
+                                    Guardar
+                                </button>
+
+                                <button 
+                                    form="<?= h($formUtilizador) ?>"
+                                    class="btn-secondary" 
+                                    name="acao" 
+                                    value="remover_utilizador"
+                                    onclick="return confirm('Remover utilizador?')"
+                                >
+                                    Remover
+                                </button>
+                            </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
@@ -651,6 +726,7 @@ function optionsUtilizadoresRestaurante($utilizadoresParaAssociar, $utilizadorAt
             <h3>Criar Restaurante</h3>
 
             <form method="POST" class="form-admin">
+                <?= csrf_field() ?>
                 <input name="nome" placeholder="Nome do restaurante" required>
                 <input name="categoria" placeholder="Categoria">
                 <input name="morada" placeholder="Morada">
@@ -694,64 +770,69 @@ function optionsUtilizadoresRestaurante($utilizadoresParaAssociar, $utilizadorAt
 
                 <tbody>
                     <?php while ($r = $restaurantes->fetchArray(SQLITE3_ASSOC)): ?>
+                        <?php
+                            $restauranteId = (int)$r['id'];
+                            $formRestaurante = 'form-restaurante-' . $restauranteId;
+                        ?>
                         <tr>
-                            <form method="POST">
-                                <td>
-                                    <?= (int)$r['id'] ?>
-                                    <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
-                                </td>
+                            <td>
+                                <form id="<?= h($formRestaurante) ?>" method="POST"></form>
+                                <?= $restauranteId ?>
+                                <input form="<?= h($formRestaurante) ?>" type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                                <input form="<?= h($formRestaurante) ?>" type="hidden" name="id" value="<?= $restauranteId ?>">
+                            </td>
 
-                                <td>
-                                    <input name="nome" value="<?= h($r['nome']) ?>" required>
-                                </td>
+                            <td>
+                                <input form="<?= h($formRestaurante) ?>" name="nome" value="<?= h($r['nome']) ?>" required>
+                            </td>
 
-                                <td>
-                                    <input name="categoria" value="<?= h($r['categoria'] ?? '') ?>">
-                                </td>
+                            <td>
+                                <input form="<?= h($formRestaurante) ?>" name="categoria" value="<?= h($r['categoria'] ?? '') ?>">
+                            </td>
 
-                                <td>
-                                    <input name="morada" value="<?= h($r['morada'] ?? '') ?>">
-                                </td>
+                            <td>
+                                <input form="<?= h($formRestaurante) ?>" name="morada" value="<?= h($r['morada'] ?? '') ?>">
+                            </td>
 
-                                <td>
-                                    <select name="ativo">
-                                        <option value="1" <?= (int)$r['ativo'] === 1 ? 'selected' : '' ?>>Ativo</option>
-                                        <option value="0" <?= (int)$r['ativo'] === 0 ? 'selected' : '' ?>>Inativo</option>
-                                    </select>
-                                </td>
+                            <td>
+                                <select form="<?= h($formRestaurante) ?>" name="ativo">
+                                    <option value="1" <?= (int)$r['ativo'] === 1 ? 'selected' : '' ?>>Ativo</option>
+                                    <option value="0" <?= (int)$r['ativo'] === 0 ? 'selected' : '' ?>>Inativo</option>
+                                </select>
+                            </td>
 
-                                <td>
-                                    <select name="utilizador_id">
-                                        <?php optionsUtilizadoresRestaurante(
-                                            $utilizadoresParaAssociar,
-                                            (int)($r['utilizador_id'] ?? 0),
-                                            (int)$r['id']
-                                        ); ?>
-                                    </select>
+                            <td>
+                                <select form="<?= h($formRestaurante) ?>" name="utilizador_id">
+                                    <?php optionsUtilizadoresRestaurante(
+                                        $utilizadoresParaAssociar,
+                                        (int)($r['utilizador_id'] ?? 0),
+                                        $restauranteId
+                                    ); ?>
+                                </select>
 
-                                    <?php if ($r['dono_nome']): ?>
-                                        <br>
-                                        <span class="small">
-                                            Atual: <?= h($r['dono_nome']) ?> (@<?= h($r['dono_username']) ?>)
-                                        </span>
-                                    <?php endif; ?>
-                                </td>
+                                <?php if ($r['dono_nome']): ?>
+                                    <br>
+                                    <span class="small">
+                                        Atual: <?= h($r['dono_nome']) ?> (@<?= h($r['dono_username']) ?>)
+                                    </span>
+                                <?php endif; ?>
+                            </td>
 
-                                <td class="acoes">
-                                    <button class="btn-primary" name="acao" value="atualizar_restaurante">
-                                        Guardar
-                                    </button>
+                            <td class="acoes">
+                                <button form="<?= h($formRestaurante) ?>" class="btn-primary" name="acao" value="atualizar_restaurante">
+                                    Guardar
+                                </button>
 
-                                    <button 
-                                        class="btn-secondary" 
-                                        name="acao" 
-                                        value="remover_restaurante"
-                                        onclick="return confirm('Remover restaurante? Se já tiver encomendas, será apenas colocado como inativo.')"
-                                    >
-                                        Remover/Inativar
-                                    </button>
-                                </td>
-                            </form>
+                                <button 
+                                    form="<?= h($formRestaurante) ?>"
+                                    class="btn-secondary" 
+                                    name="acao" 
+                                    value="remover_restaurante"
+                                    onclick="return confirm('Remover restaurante? Se já tiver encomendas, será apenas colocado como inativo.')"
+                                >
+                                    Remover/Inativar
+                                </button>
+                            </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
@@ -801,8 +882,29 @@ function optionsUtilizadoresRestaurante($utilizadoresParaAssociar, $utilizadorAt
     </section>
 </main>
 
-<footer>
-    <p>© 2026 FoodToGo</p>
+<footer class="rodape-app">
+    <button
+        type="button"
+        class="rodape-info-toggle"
+        data-info-grupo
+        data-tooltip="Clique para ver as informações do grupo"
+        title="Clique para ver as informações do grupo"
+        aria-expanded="false"
+        aria-controls="info-projeto-grupo"
+    >
+        © 2026 FoodToGo - Todos os direitos reservados.
+    </button>
+
+    <div id="info-projeto-grupo" class="rodape-info" hidden>
+        <strong>Sobre o projeto</strong>
+        <p>FoodToGo é uma aplicação web de encomenda de alimentos que liga clientes e restaurantes numa plataforma simples e organizada.</p>
+        <strong>Grupo</strong>
+        <ul>
+            <li>1231707 - Erick de Abreu Gomes</li>
+            <li>1250756 - André Gonçalves Monteiro</li>
+            <li>1251415 - Rodrigo Luís Nunes Alves Ribeiro</li>
+        </ul>
+    </div>
 </footer>
 
 <script src="scripts/app.js"></script>

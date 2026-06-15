@@ -1,15 +1,13 @@
 /*
     FoodToGo - app.js
 
-    Este ficheiro contém a lógica JavaScript geral da aplicação:
-    - mensagens visuais ao utilizador;
-    - tratamento do login com fetch/AJAX;
-    - leitura de respostas JSON vindas do PHP;
+    Lógica JavaScript geral:
+    - mensagens visuais;
+    - validação visual de formulários;
+    - login com fetch/AJAX;
     - mensagens após registo;
-    - controlo das abas do painel de administração.
-
-    A lógica específica do carrinho está no carrinho.php,
-    porque depende diretamente de dados vindos do PHP e da base de dados.
+    - abas do painel de administração;
+    - painel de informação do projeto no rodapé.
 */
 
 /* =========================
@@ -40,6 +38,145 @@ function mostrarMensagem(mensagem, tipo = 'erro') {
 }
 
 /* =========================
+   VALIDAÇÃO DE FORMULÁRIOS
+========================= */
+
+function campoIgnorado(campo) {
+    return ['hidden', 'submit', 'button', 'reset'].includes(campo.type);
+}
+
+function mensagemErroCampo(campo) {
+    if (campo.validity && campo.validity.valueMissing) {
+        return 'Este campo é obrigatório.';
+    }
+
+    if (campo.type === 'email' && campo.value.trim() !== '' && !campo.checkValidity()) {
+        return 'Insira um email válido.';
+    }
+
+    if (campo.type === 'tel' && campo.value.trim() !== '' && !/^9[0-9]{8}$/.test(campo.value.trim())) {
+        return 'O telemóvel deve ter 9 dígitos e começar por 9.';
+    }
+
+    if (campo.name && campo.name.toLowerCase().includes('preco')) {
+        const valor = Number(String(campo.value).replace(',', '.'));
+
+        if (!Number.isFinite(valor) || valor <= 0) {
+            return 'Insira um preço válido e superior a zero.';
+        }
+    }
+
+    if (campo.type === 'number') {
+        const valor = Number(campo.value);
+        const min = campo.min !== '' ? Number(campo.min) : null;
+        const max = campo.max !== '' ? Number(campo.max) : null;
+
+        if (campo.value !== '' && (!Number.isFinite(valor) || (min !== null && valor < min) || (max !== null && valor > max))) {
+            return 'Insira um valor dentro dos limites permitidos.';
+        }
+    }
+
+    return '';
+}
+
+function obterCaixaErro(campo) {
+    if (!campo.id) {
+        campo.id = 'campo-' + Math.random().toString(36).slice(2);
+    }
+
+    const idErro = campo.id + '-erro';
+    let erro = document.getElementById(idErro);
+
+    if (!erro) {
+        erro = document.createElement('small');
+        erro.id = idErro;
+        erro.className = 'mensagem-campo';
+        campo.insertAdjacentElement('afterend', erro);
+    }
+
+    return erro;
+}
+
+function marcarCampoInvalido(campo, mensagem) {
+    const erro = obterCaixaErro(campo);
+
+    campo.classList.add('campo-invalido');
+    campo.setAttribute('aria-invalid', 'true');
+    campo.setAttribute('aria-describedby', erro.id);
+    erro.textContent = mensagem;
+}
+
+function limparCampoInvalido(campo) {
+    campo.classList.remove('campo-invalido');
+    campo.removeAttribute('aria-invalid');
+
+    const idErro = campo.id ? campo.id + '-erro' : '';
+    const erro = idErro ? document.getElementById(idErro) : null;
+
+    if (erro) {
+        erro.textContent = '';
+    }
+}
+
+function validarCampo(campo) {
+    if (campoIgnorado(campo) || campo.disabled) {
+        return true;
+    }
+
+    const mensagem = mensagemErroCampo(campo);
+
+    if (mensagem !== '') {
+        marcarCampoInvalido(campo, mensagem);
+        return false;
+    }
+
+    limparCampoInvalido(campo);
+    return true;
+}
+
+function validarFormulario(form) {
+    const campos = Array.from(form.elements);
+    let valido = true;
+    let primeiroInvalido = null;
+
+    campos.forEach(campo => {
+        if (!validarCampo(campo)) {
+            valido = false;
+            primeiroInvalido = primeiroInvalido || campo;
+        }
+    });
+
+    if (!valido && primeiroInvalido) {
+        primeiroInvalido.focus();
+        mostrarMensagem('Corrija os campos assinalados antes de continuar.', 'erro');
+    }
+
+    return valido;
+}
+
+function setupValidacaoFormularios() {
+    document.querySelectorAll('form').forEach(form => {
+        form.setAttribute('novalidate', 'novalidate');
+
+        Array.from(form.elements).forEach(campo => {
+            campo.addEventListener('input', () => {
+                validarCampo(campo);
+            });
+
+            campo.addEventListener('change', () => {
+                validarCampo(campo);
+            });
+        });
+
+        form.addEventListener('submit', event => {
+            if (!validarFormulario(form)) {
+                event.preventDefault();
+            }
+        });
+    });
+}
+
+/* =========================
    MENSAGENS DO REGISTO
 ========================= */
 
@@ -62,11 +199,6 @@ function processLoginMessages() {
     if (mensagens[registo]) {
         const tipo = registo === 'sucesso' ? 'sucesso' : 'erro';
         mostrarMensagem(mensagens[registo], tipo);
-
-        /*
-            Remove o parâmetro ?registo=... do URL depois de mostrar a mensagem,
-            para a mensagem não voltar a aparecer ao recarregar a página.
-        */
         window.history.replaceState({}, document.title, 'login.html');
     }
 }
@@ -83,6 +215,11 @@ function setupLoginAjax() {
     }
 
     formLogin.addEventListener('submit', event => {
+        if (event.defaultPrevented || !validarFormulario(formLogin)) {
+            event.preventDefault();
+            return;
+        }
+
         event.preventDefault();
 
         const dados = new FormData(formLogin);
@@ -143,11 +280,68 @@ function setupTabsAdmin() {
 }
 
 /* =========================
+   INFORMAÇÃO DO PROJETO
+========================= */
+
+function setupInfoGrupoRodape() {
+    document.querySelectorAll('[data-info-grupo]').forEach(botao => {
+        const painel = document.getElementById(botao.getAttribute('aria-controls'));
+
+        if (!painel) {
+            return;
+        }
+
+        function abrir() {
+            painel.hidden = false;
+            botao.setAttribute('aria-expanded', 'true');
+        }
+
+        function fechar() {
+            painel.hidden = true;
+            botao.setAttribute('aria-expanded', 'false');
+        }
+
+        painel.addEventListener('click', event => {
+            event.stopPropagation();
+        });
+
+        botao.addEventListener('click', event => {
+            event.stopPropagation();
+
+            if (!painel.hidden) {
+                fechar();
+                return;
+            }
+
+            abrir();
+        });
+
+        botao.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                fechar();
+                botao.focus();
+            }
+        });
+
+        document.addEventListener('click', event => {
+            if (!botao.contains(event.target) && !painel.contains(event.target)) {
+                fechar();
+            }
+        });
+    });
+}
+
+/* =========================
    INICIALIZAÇÃO
 ========================= */
 
+window.mostrarMensagem = mostrarMensagem;
+window.validarFormulario = validarFormulario;
+
 document.addEventListener('DOMContentLoaded', () => {
     processLoginMessages();
+    setupValidacaoFormularios();
     setupLoginAjax();
     setupTabsAdmin();
+    setupInfoGrupoRodape();
 });

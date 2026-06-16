@@ -171,18 +171,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Não pode remover a sua própria conta de administrador.');
             }
 
+            garantir_encomendas_permitem_cliente_apagado($db);
+
             $stmt = $db->prepare("
-                SELECT COUNT(*)
-                FROM encomendas
+                UPDATE encomendas
+                SET utilizador_id = NULL
                 WHERE utilizador_id = :id
             ");
             $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
-            $result = $stmt->execute();
-            $temEncomendas = (int)$result->fetchArray(SQLITE3_NUM)[0];
+            $stmt->execute();
 
-            if ($temEncomendas > 0) {
-                throw new Exception('Este utilizador tem encomendas associadas e não pode ser removido para não quebrar o histórico.');
-            }
+            $stmt = $db->prepare("
+                DELETE FROM acessos
+                WHERE utilizador_id = :id
+            ");
+
+            $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+            $stmt->execute();
 
             $stmt = $db->prepare("
                 UPDATE restaurantes
@@ -203,7 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindValue(':me', (int)$_SESSION['user_id'], SQLITE3_INTEGER);
             $stmt->execute();
 
-            $mensagem = 'Utilizador removido com sucesso.';
+            $mensagem = 'Utilizador removido com sucesso. As encomendas antigas passam a aparecer como Cliente apagado.';
         }
 
         if ($acao === 'adicionar_restaurante') {
@@ -460,10 +465,10 @@ $encomendas = $db->query("
         e.total,
         e.contacto_cliente,
         e.morada_entrega,
-        u.nome AS cliente,
+        COALESCE(u.nome, 'Cliente apagado') AS cliente,
         r.nome AS restaurante
     FROM encomendas e
-    JOIN utilizadores u ON u.id = e.utilizador_id
+    LEFT JOIN utilizadores u ON u.id = e.utilizador_id
     JOIN restaurantes r ON r.id = e.restaurante_id
     ORDER BY e.data DESC
     LIMIT 20

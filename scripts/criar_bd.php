@@ -74,7 +74,7 @@ $db->exec("
 $db->exec("
     CREATE TABLE IF NOT EXISTS encomendas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        utilizador_id INTEGER NOT NULL,
+        utilizador_id INTEGER,
         restaurante_id INTEGER NOT NULL,
         data TEXT NOT NULL,
         estado TEXT NOT NULL DEFAULT 'recebida',
@@ -82,7 +82,7 @@ $db->exec("
         morada_entrega TEXT,
         contacto_cliente TEXT,
         observacoes TEXT,
-        FOREIGN KEY (utilizador_id) REFERENCES utilizadores(id),
+        FOREIGN KEY (utilizador_id) REFERENCES utilizadores(id) ON DELETE SET NULL,
         FOREIGN KEY (restaurante_id) REFERENCES restaurantes(id)
     )
 ");
@@ -110,6 +110,8 @@ if (!in_array('contacto_cliente', $colunasEncomendas, true)) {
 if (!in_array('observacoes', $colunasEncomendas, true)) {
     $db->exec("ALTER TABLE encomendas ADD COLUMN observacoes TEXT");
 }
+
+garantir_encomendas_permitem_cliente_apagado($db);
 
 /* =========================
    TABELA ENCOMENDA_ITENS

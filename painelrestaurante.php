@@ -272,11 +272,11 @@ if ($restaurante) {
             e.morada_entrega,
             e.contacto_cliente,
             e.observacoes,
-            u.nome AS cliente_nome,
+            COALESCE(u.nome, 'Cliente apagado') AS cliente_nome,
             u.email AS cliente_email,
             GROUP_CONCAT(p.nome || ' x' || ei.quantidade, ', ') AS itens
         FROM encomendas e
-        INNER JOIN utilizadores u ON u.id = e.utilizador_id
+        LEFT JOIN utilizadores u ON u.id = e.utilizador_id
         INNER JOIN encomenda_itens ei ON ei.encomenda_id = e.id
         INNER JOIN produtos p ON p.id = ei.produto_id
         WHERE p.restaurante_id = :restaurante_id
@@ -544,8 +544,11 @@ if ($restaurante) {
                                     </td>
 
                                     <td>
-                                        <strong><?= h($encomenda['cliente_nome']) ?></strong><br>
-                                        <span><?= h($encomenda['cliente_email']) ?></span>
+                                        <strong><?= h($encomenda['cliente_nome']) ?></strong>
+                                        <?php if (!empty($encomenda['cliente_email'])): ?>
+                                            <br>
+                                            <span><?= h($encomenda['cliente_email']) ?></span>
+                                        <?php endif; ?>
                                     </td>
 
                                     <td>

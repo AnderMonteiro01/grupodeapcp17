@@ -1,4 +1,106 @@
 <?php
+function garantir_encomendas_permitem_cliente_apagado($db) {
+    $existe = (int)$db->querySingle("
+        SELECT COUNT(*)
+        FROM sqlite_master
+        WHERE type = 'table'
+          AND name = 'encomendas'
+    ");
+
+    if ($existe === 0) {
+        return;
+    }
+
+    $colunas = [];
+    $utilizadorObrigatorio = false;
+    $result = $db->query("PRAGMA table_info(encomendas)");
+
+    while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+        $colunas[] = $row['name'];
+
+        if ($row['name'] === 'utilizador_id') {
+            $utilizadorObrigatorio = ((int)$row['notnull'] === 1);
+        }
+    }
+
+    if (!$utilizadorObrigatorio) {
+        return;
+    }
+
+    $colunasNecessarias = [
+        'id',
+        'utilizador_id',
+        'restaurante_id',
+        'data',
+        'estado',
+        'total',
+        'morada_entrega',
+        'contacto_cliente',
+        'observacoes'
+    ];
+
+    foreach ($colunasNecessarias as $coluna) {
+        if (!in_array($coluna, $colunas, true)) {
+            return;
+        }
+    }
+
+    $db->exec('PRAGMA foreign_keys = OFF');
+
+    try {
+        $db->exec('BEGIN TRANSACTION');
+        $db->exec('DROP TABLE IF EXISTS encomendas_migracao_cliente_apagado');
+        $db->exec("
+            CREATE TABLE encomendas_migracao_cliente_apagado (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                utilizador_id INTEGER,
+                restaurante_id INTEGER NOT NULL,
+                data TEXT NOT NULL,
+                estado TEXT NOT NULL DEFAULT 'recebida',
+                total REAL NOT NULL DEFAULT 0,
+                morada_entrega TEXT,
+                contacto_cliente TEXT,
+                observacoes TEXT,
+                FOREIGN KEY (utilizador_id) REFERENCES utilizadores(id) ON DELETE SET NULL,
+                FOREIGN KEY (restaurante_id) REFERENCES restaurantes(id)
+            )
+        ");
+        $db->exec("
+            INSERT INTO encomendas_migracao_cliente_apagado (
+                id,
+                utilizador_id,
+                restaurante_id,
+                data,
+                estado,
+                total,
+                morada_entrega,
+                contacto_cliente,
+                observacoes
+            )
+            SELECT
+                id,
+                utilizador_id,
+                restaurante_id,
+                data,
+                estado,
+                total,
+                morada_entrega,
+                contacto_cliente,
+                observacoes
+            FROM encomendas
+        ");
+        $db->exec('DROP TABLE encomendas');
+        $db->exec('ALTER TABLE encomendas_migracao_cliente_apagado RENAME TO encomendas');
+        $db->exec('COMMIT');
+    } catch (Exception $e) {
+        $db->exec('ROLLBACK');
+        $db->exec('PRAGMA foreign_keys = ON');
+        throw $e;
+    }
+
+    $db->exec('PRAGMA foreign_keys = ON');
+}
+
 try {
     $databaseDir = __DIR__ . '/../data';
 
